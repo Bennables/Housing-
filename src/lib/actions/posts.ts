@@ -2,11 +2,13 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
 import { posts, reports } from "@/db/schema";
 import { audienceForRole } from "@/lib/audience";
 import { getPublicListingById } from "@/lib/data/listings";
+import { notifyMatchesForPost } from "@/lib/notify/match";
 import { guardOnboarded, guardSignedIn } from "@/lib/guards";
 import { postInputSchema, reportInputSchema } from "@/lib/validation/post";
 import { firstError } from "@/lib/validation/common";
@@ -44,6 +46,8 @@ export async function createPost(raw: unknown): Promise<ActionResult<{ id: strin
     .returning({ id: posts.id });
 
   revalidatePath("/feed");
+  // Text people who may care about this post. Runs after the response, so posting stays fast.
+  after(() => notifyMatchesForPost(row.id));
   return ok({ id: row.id });
 }
 

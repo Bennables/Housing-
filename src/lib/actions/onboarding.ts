@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { agencies, users } from "@/db/schema";
 import { getAgencyForUser } from "@/lib/data/agency";
 import { guardSignedIn } from "@/lib/guards";
-import { agencyInputSchema, chooseRoleSchema } from "@/lib/validation/account";
+import { agencyInputSchema, chooseRoleSchema, smsSettingsSchema } from "@/lib/validation/account";
 import { firstError } from "@/lib/validation/common";
 import { fail, ok, type ActionResult } from "./result";
 
@@ -24,9 +24,29 @@ export async function chooseRole(
     return fail("Agency accounts cannot switch to household or builder.");
   }
 
-  await db.update(users).set({ role: parsed.data.role }).where(eq(users.id, guard.viewer.id));
+  const { role, sms } = parsed.data;
+  await db
+    .update(users)
+    .set(sms ? { role, smsOptIn: sms.smsOptIn, phone: sms.phone } : { role })
+    .where(eq(users.id, guard.viewer.id));
   revalidatePath("/", "layout");
-  return ok({ role: parsed.data.role });
+  return ok({ role });
+}
+
+/** Turn text alerts on or off. Turning them off also deletes the stored phone number. */
+export async function updateSmsSettings(raw: unknown): Promise<ActionResult> {
+  const guard = await guardSignedIn();
+  if (!guard.ok) return fail(guard.error);
+
+  const parsed = smsSettingsSchema.safeParse(raw);
+  if (!parsed.success) return fail(firstError(parsed.error));
+
+  await db
+    .update(users)
+    .set({ smsOptIn: parsed.data.smsOptIn, phone: parsed.data.phone })
+    .where(eq(users.id, guard.viewer.id));
+  revalidatePath("/profile");
+  return ok();
 }
 
 /** Becoming an agency always goes through verification: the agency starts unverified. */

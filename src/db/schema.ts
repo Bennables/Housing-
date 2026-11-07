@@ -45,17 +45,27 @@ export const audienceEnum = pgEnum("audience", AUDIENCES);
 // Auth.js tables (standard @auth/drizzle-adapter shape, plus role and isAdmin on users)
 // ---------------------------------------------------------------------------
 
-export const users = pgTable("users", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name"),
-  email: text("email").unique(),
-  emailVerified: timestamp("email_verified", { mode: "date" }),
-  image: text("image"),
-  role: userRoleEnum("role").notNull().default("unassigned"),
-  isAdmin: boolean("is_admin").notNull().default(false),
-});
+export const users = pgTable(
+  "users",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: text("name"),
+    email: text("email").unique(),
+    emailVerified: timestamp("email_verified", { mode: "date" }),
+    image: text("image"),
+    role: userRoleEnum("role").notNull().default("unassigned"),
+    isAdmin: boolean("is_admin").notNull().default(false),
+    // E.164, e.g. +15551234567. Only kept while the person has opted in to texts.
+    phone: text("phone"),
+    smsOptIn: boolean("sms_opt_in").notNull().default(false),
+  },
+  (t) => [
+    check("users_phone_e164", sql`${t.phone} is null or ${t.phone} ~ '^\\+[1-9][0-9]{7,14}$'`),
+    check("users_sms_opt_in_needs_phone", sql`not ${t.smsOptIn} or ${t.phone} is not null`),
+  ],
+);
 
 export const accounts = pgTable(
   "accounts",
@@ -322,6 +332,50 @@ export const reports = pgTable(
   (t) => [
     unique("reports_one_per_user_per_post").on(t.postId, t.reporterId),
     index("reports_post_id_idx").on(t.postId),
+  ],
+);
+
+// One row per person per post they opened. Tags are not copied here: they come from the post and
+// its listing at query time, so there is one source of truth.
+export const postViews = pgTable(
+  "post_views",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    viewCount: integer("view_count").notNull().default(1),
+    viewedAt: ts("viewed_at").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.postId] }),
+    index("post_views_user_viewed_idx").on(t.userId, t.viewedAt.desc()),
+  ],
+);
+
+// Texts we sent (or tried to send) about a post. The unique pair stops duplicate texts.
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    reason: text("reason"),
+    status: text("status", { enum: ["pending", "sent", "failed"] })
+      .notNull()
+      .default("pending"),
+    providerMessageId: text("provider_message_id"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    unique("notifications_one_per_user_per_post").on(t.userId, t.postId),
+    index("notifications_user_created_idx").on(t.userId, t.createdAt.desc()),
   ],
 );
 

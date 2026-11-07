@@ -4,6 +4,7 @@ import { Building2, Home, Landmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { AgencyForm } from "@/components/agency-form";
+import { SmsFields } from "@/components/sms-fields";
 import { chooseRole } from "@/lib/actions/onboarding";
 
 const CHOICES = [
@@ -24,13 +25,14 @@ const CHOICES = [
 export function OnboardingForm() {
   const router = useRouter();
   const [showAgency, setShowAgency] = useState(false);
+  const [sms, setSms] = useState({ smsOptIn: false, phone: "" });
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function pick(role: "household" | "builder") {
     setError(null);
     startTransition(async () => {
-      const result = await chooseRole({ role });
+      const result = await chooseRole({ role, sms });
       if (!result.ok) setError(result.error);
       else router.push("/feed");
     });
@@ -38,6 +40,11 @@ export function OnboardingForm() {
 
   return (
     <div className="space-y-4">
+      <div className="rounded-xl border bg-card p-4 shadow-xs">
+        <p className="mb-3 font-semibold">Text alerts (optional)</p>
+        <SmsFields idPrefix="onboarding-sms" {...sms} onChange={setSms} disabled={pending} />
+      </div>
+
       <ul className="grid gap-3 sm:grid-cols-2">
         {CHOICES.map(({ role, icon: Icon, title, text }) => (
           <li key={role}>
