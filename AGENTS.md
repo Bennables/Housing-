@@ -1,135 +1,317 @@
-# Plan: AGENTS.md + Next.js scaffold for the housing programs feed and listings
+# AGENTS.md
 
-## Context
+Guidance for AI coding agents (Claude Code, Codex, Cursor, etc.) working in this repo. Read this whole file before making changes. If this file and the code disagree, ask before "fixing" either one.
 
-The repo is empty, with no commits on main.
-The project is a "Lane 3: Fund it" app.
-Affordable housing does not pencil because capped rents cannot repay construction costs, which leaves a funding gap.
-Our angle is the household side.
-We give people one place to discover government programs and subsidies, such as SNAP, Medi-Cal and LIHEAP.
-Those programs cover other costs, which frees up household money for rent.
-The product is a LinkedIn-style app where people post about government programs.
-It also has a Listings tab, a simple database of the opportunities that exist.
+## Project context
 
-### Decisions from the user
+**Hackathon:** Hack for Good, Lane 3 ("Fund it: Does it pencil, and who closes the gap?")
 
-- Stack: Next.js full stack on Vercel.
-- Database: Neon Postgres from the Vercel Marketplace, used with Drizzle ORM.
-- Auth: Auth.js v5 with Google, with sessions stored in Postgres.
-- Program data: a seeded catalog of programs, plus user posts.
-- MVP scope: two tabs, Feed and Listings.
-  Feed is a LinkedIn-style feed of posts.
-  Each post has a body, a "potential benefits" dollar value, eligibility requirements, and state tags.
-  Beyond those fields, the post format stays open, because it will be customized later.
-  Listings is a simple, browsable database of potential opportunities, read from the seeded programs catalog.
+Affordable housing does not pencil because capped rents cannot repay construction costs. That leaves a **funding gap**. Every project has one, and today the capital stack is assembled by hand, one project at a time. We want to make the gap smaller, or make the money that closes it easier to find.
 
-## Step 1 - Write AGENTS.md (the first deliverable)
+## Our approach
 
-Create AGENTS.md at the repo root.
-Follow the user's writing rules: each sentence on its own line, and no em dashes.
+A dual-sided platform that attacks the funding gap from both ends:
 
-Sections:
+| Side | Who | What they get | How it closes the gap |
+|------|-----|---------------|------------------------|
+| **Household** | Low-income renters | One place to discover consumer programs (SNAP/CalFresh, Medi-Cal, WIC, LIHEAP, EITC, Section 8) | Programs cover other costs, which frees household money for rent and raises ability to pay |
+| **Builder** | Affordable housing developers, nonprofits, small ADU builders | Tailored access to grants, loans, zoning/density bonuses, and development funds | Directly fills their capital stack |
 
-- Project context - the pasted Lane 3 brief, kept faithful to the original: the problem, key terms (pencils, capital stack, LIHTC), why it is hard, and where the money can come from.
-  Keep source tags (smartergrowth, berkeley, kmph) as inline citations.
-- Our approach - give people access to every government program and subsidy, so they can offload other costs and put that money toward rent.
-  Also, a LinkedIn-style feed where people post about programs, and a Listings tab where they can browse the opportunities.
-- Architecture - Next.js App Router, TypeScript, Tailwind + shadcn/ui, Neon Postgres + Drizzle, Auth.js v5 (Google), and deployment on Vercel.
-  Server Components read data.
-  Server Actions handle mutations.
-  There is no separate API server.
-- Data model - a summary of the tables in Step 3.
-- Conventions - pnpm, the folder layout, how migrations and seeds run, and env var names.
-  Also: lint, typecheck and tests must pass before a commit.
-  Commit messages never carry AI co-author trailers.
-- Commands - dev, build, lint, typecheck, test, e2e, db:generate, db:migrate, db:seed.
+Core features:
 
-Also add a one-line CLAUDE.md containing `@AGENTS.md`, so Claude Code sessions load it automatically.
+There are two kinds of content, and agents must never blur them:
 
-## Step 2 - Scaffold the app
+| | **Listing** | **Post** |
+|---|---|---|
+| What it is | The official opportunity (a grant, benefit, loan, or bonus) | A person sharing about an opportunity ("Applications for X open Monday, here's how I applied") |
+| Who creates it | Verified **agencies** (government offices, housing authorities, nonprofits that run the program). Admins can also add seed listings. | **Anyone** who is signed in |
+| Where it appears | **Listings** tab | **Feed** tab |
+| Trust level | Official, shows a "Verified agency" badge | Community, shows a "Community post" label |
 
-- Run `pnpm create next-app@latest .` with TypeScript, App Router, Tailwind, ESLint and the src/ dir.
-- Add shadcn/ui for base components: button, card, textarea, avatar and dropdown.
-- Add Prettier, a typecheck script, and a .env.example listing DATABASE_URL, AUTH_SECRET, AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET.
+- **Feed:** a LinkedIn-style feed of posts. A post can share a listing, which renders as an embedded listing card inside the post.
+- **Listings:** a browsable catalog of official opportunities, with current and past (closed) listings.
+- **Community sourcing:** when someone spots a new local grant that isn't listed yet, they post about it with a source link. Admins or the agency can then turn it into an official listing. This lets the platform scale without heavy admin work.
+- **Trust:** every listing and post shows a **Source** badge linking to an official URL.
+- **My Capital Stack:** a builder sidebar that totals saved funding against their project cost to visualize the gap closing.
 
-Layout:
+### Out of scope for the hackathon
+
+Payments, identity verification, submitting applications for users, DMs, native mobile apps.
+
+## Architecture
+
+- **Framework:** Next.js App Router, TypeScript (strict), Tailwind CSS, shadcn/ui
+- **Database:** Neon Postgres (installed from the Vercel Marketplace), Drizzle ORM
+- **Auth:** Auth.js v5 (`next-auth@5`) with the Drizzle adapter and database sessions stored in Postgres. Google is the sign-in provider; add more Auth.js providers in `src/lib/auth.ts` only if the team asks.
+- **Hosting:** Vercel
+- **Reads:** Server Components query the database directly
+- **Writes:** Server Actions handle all mutations
+- **No separate API server.** Do not add FastAPI, Express, or `/api` route handlers unless a feature truly needs one (Auth.js's own route handler is the exception).
+
+## Repository structure
 
 ```
 src/
-  app/
-    layout.tsx            # nav bar with Feed / Listings tabs and sign-in / avatar
-    page.tsx              # the feed
-    posts/[id]/page.tsx   # post detail + comments
-    listings/page.tsx     # the listings database
-    api/auth/[...nextauth]/route.ts
-  auth.ts                 # Auth.js config (Drizzle adapter, Google provider)
-  db/
-    index.ts              # drizzle(neon-http) client
-    schema.ts
-    seed.ts               # seeds the program catalog
-  lib/actions/            # server actions: createPost, toggleLike, addComment, deletePost
-  lib/states.ts           # US state codes and names (50 states + DC) for state tags
-  components/feed/        # PostCard, Composer, LikeButton, CommentList
-  components/listings/    # ListingCard
-drizzle/                  # generated migrations
-e2e/                      # Playwright tests
+├── app/
+│   ├── (public)/              # feed and listings, readable without sign-in
+│   │   ├── feed/
+│   │   └── listings/
+│   ├── onboarding/            # role picker (Server Component)
+│   ├── agency/                # agency dashboard: create/edit/close listings
+│   ├── admin/                 # verify agencies, review reports
+│   ├── api/auth/[...nextauth]/route.ts
+│   └── layout.tsx
+├── components/                # shared UI (SourceBadge, PostCard, ListingCard, CapitalStackSidebar)
+├── components/ui/             # shadcn/ui generated components (do not hand-edit)
+├── db/
+│   ├── schema.ts              # all Drizzle tables, enums, indexes
+│   ├── index.ts               # db client
+│   ├── migrations/            # drizzle-kit output (never edit applied migrations)
+│   └── seed.ts                # seed script
+├── lib/
+│   ├── actions/               # Server Actions, one file per resource
+│   ├── validation/            # zod schemas shared by forms and actions
+│   └── auth.ts                # Auth.js config
+└── middleware.ts
+tests/                         # unit + integration (Vitest)
+e2e/                           # Playwright
 ```
 
-## Step 3 - Data model (Drizzle, src/db/schema.ts)
+## Data model
 
-- Auth.js tables - users, accounts, sessions and verificationTokens, using the standard @auth/drizzle-adapter schema.
-- programs - id, slug, name, level (federal, state or local), category (housing, food, health, energy, income or other), summary, url, state (nullable).
-  Seeded with about 15 real programs: LIHTC, Section 8 vouchers, SNAP, WIC, Medi-Cal, LIHEAP, CalFresh, EITC/CalEITC, Lifeline/ACP successor, CA SB 4, and similar.
-- posts - id, authorId, body, benefitCents (integer, nullable), benefitPeriod (enum: one_time, month or year, nullable), eligibility (text, nullable), states (text[] of two-letter state codes, default empty), programId (nullable FK), createdAt.
-  benefitCents and benefitPeriod hold the "potential benefits" dollar value, such as $250 a month or $5,000 a year.
-  The amount is stored in integer cents to avoid floating point errors, and is shown in whole dollars.
-  benefitCents and benefitPeriod are either both set or both null, enforced with a check constraint.
-  eligibility holds the requirements to qualify, such as income limits, household size or residency.
-  An empty states array means the post is not tied to a state, for example a federal program.
-  The rest of the format stays open so it can change later.
-- comments - id, postId, authorId, body, createdAt.
-- likes - (postId, userId) composite primary key.
-- Indexes go on posts.createdAt for the feed and on comments.postId.
+All tables live in `src/db/schema.ts`.
 
-## Step 4 - Features
+### Auth.js tables
 
-### Listings
+`users`, `accounts`, `sessions`, `verificationTokens` (standard Drizzle adapter shape).
 
-- Listings page - a Server Component at /listings that lists every program in the catalog.
-  Each listing shows name, level, category, summary, state if any, and a link to the official site.
-- Listings are read-only for users and come from the seed, so there is no create or edit flow in the MVP.
-- Signed out - listings are readable.
+`users` adds:
+- `role` enum: `builder` | `household` | `agency` | `unassigned`, default `unassigned`
+- `isAdmin` boolean, default `false` (moderates posts, verifies agencies, manages seed listings)
 
-### Feed
+### Shared enum: frequency
 
-- Feed page - a Server Component that lists posts newest first with cursor pagination ("Load more").
-  Each post shows author avatar and name, relative time, body, a "Potential benefits" amount (for example "Up to $250/mo"), an "Eligibility" section, state tags, an optional program tag, like count, and comment count.
-  The benefits amount and the eligibility section are hidden when empty.
-- Composer - visible when signed in.
-  It has a body textarea, a "Potential benefits" dollar input with a period select (one time, per month, per year), an "Eligibility requirements" textarea, a multi-select for state tags fed from lib/states.ts, and an optional "tag a program" select fed from the seeded catalog.
-  It calls the createPost server action, which checks the session, validates with zod, and revalidates /.
-  Validation: body 1 to 3000 chars, the benefit amount is a positive dollar value up to $1,000,000 and needs a period, eligibility is up to 2000 chars, and every state tag must be a known code with no duplicates.
-- Likes - a toggleLike action with an optimistic UI using useOptimistic.
-- Comments - on the post detail page, using an addComment action.
-- Delete - authors can delete their own posts.
-- Signed out - the feed is readable.
-  Actions prompt sign-in.
+`frequency`: `one_time` | `weekly` | `monthly` | `quarterly` | `yearly`
 
-## Step 5 - Vercel + Neon setup
+Used by every dollar amount on listings and posts. An amount is meaningless without its frequency, so amounts and frequency are always set together or both null (enforce with a check constraint).
 
-- Install the Neon integration on the Vercel project.
-  It injects DATABASE_URL and creates a database branch for each preview deployment.
-- Local dev uses a personal Neon dev branch through .env.local.
-- Migrations run with `drizzle-kit migrate` as part of the Vercel build, before `next build`.
-- The Google OAuth client needs both the localhost and the Vercel callback URLs.
-- Steps the user must do by hand, because they need accounts: create the Vercel project, attach Neon, and create the Google OAuth client.
+### agencies
 
-## Verification
+| Column | Notes |
+|--------|-------|
+| id | uuid |
+| userId | fk users, the account that manages it |
+| name | e.g., "OC Housing Finance Trust" |
+| level | `federal` \| `state` \| `county` \| `city` \| `nonprofit` |
+| website | official domain, required |
+| verified | boolean, default `false`; only admins set it |
+| createdAt | |
 
-- `pnpm lint`, `pnpm typecheck` and `pnpm build` all pass with zero warnings.
-- Vitest unit tests cover the zod validators, the benefit amount formatter, and the cursor pagination helper.
-- Playwright E2E runs against `pnpm dev` and a test Neon branch.
-  It covers: signed-out user sees the feed, signed-out user opens Listings and sees the seeded programs, sign in, create a post with potential benefits, eligibility requirements, a state tag and a program tag, check that all of them render on the card, like it, comment on it, delete it.
-  Google OAuth cannot be automated, so a credentials provider is enabled only when E2E_TEST_AUTH=1 and never in production.
-- Run the app manually and check the feed and listings UI closely at desktop and phone widths: spacing, alignment, empty state, and loading state.
-- Deploy a Vercel preview and repeat the core flow there with real Google sign-in.
+### listings (official opportunities)
+
+| Column | Notes |
+|--------|-------|
+| id | uuid |
+| slug | unique |
+| agencyId | fk agencies, nullable only for admin-seeded listings |
+| createdById | fk users |
+| name | |
+| type | `grant` \| `benefit` \| `loan` \| `tax_credit` \| `zoning_bonus` \| `other` |
+| category | text enum (e.g., food, health, utilities, rent, childcare, development, adu) |
+| level | `federal` \| `state` \| `county` \| `city` |
+| summary | plain English |
+| eligibility | plain English, under 2000 chars |
+| url | official source, required |
+| state | nullable for federal listings |
+| targetAudience | `builder` \| `household` \| `both` |
+| amountMinCents, amountMaxCents | nullable integers |
+| frequency | `frequency` enum; **required when type is `grant` or `benefit`**, and whenever an amount is set (check constraint) |
+| opensAt, closesAt | nullable timestamps; null = rolling |
+| sourceCheckedAt | date the info was last verified |
+| createdAt, updatedAt | |
+
+Compute open/upcoming/closed/rolling status at query time from the dates. Do not store it.
+
+Example frequencies: CalFresh = `monthly`, EITC = `yearly`, CalHFA ADU Grant = `one_time`, LIHEAP = `yearly` (or `one_time` per season; confirm at source).
+
+### Seed listings
+
+**Builder:**
+- LIHTC (9% and 4%) *(moved here: LIHTC is a tax credit for developers, not households)*
+- National Housing Trust Fund
+- HCD CalHome Program
+- CalHFA ADU Grant Program
+- OC Housing Finance Trust ADU Loan
+- California State Density Bonus Law, as a `zoning_bonus` item *(added: the plan promises zoning bonuses)*
+
+**Household:**
+- Section 8 Housing Choice Vouchers
+- CalFresh *(this is California's name for SNAP; seed it once, mention SNAP in the summary)*
+- WIC
+- Medi-Cal
+- LIHEAP
+- EITC and CalEITC
+
+Seed listings are created by an admin with `agencyId` null and display the program's official agency name from the URL. Also seed 2 demo agencies (one verified, one pending) and a few posts that share listings.
+
+Include at least one closed listing per side so the past view has content. **Every amount, frequency, date, and eligibility fact must come from the official URL.** If unsure, leave it null and add `// TODO(verify)`.
+
+### posts (community shares)
+
+A post is a person talking about an opportunity. It is never itself the official opportunity.
+
+| Column | Notes |
+|--------|-------|
+| id | uuid |
+| authorId | fk users (any role) |
+| body | 1 to 3000 chars |
+| listingId | fk listings, nullable; when set, the post embeds that listing's card |
+| benefitCents | positive integer, nullable; only for unlisted opportunities |
+| benefitFrequency | `frequency` enum, nullable |
+| eligibility | under 2000 chars, nullable; only for unlisted opportunities |
+| states | text[] of valid 2-letter US state codes |
+| sourceUrl | nullable |
+| targetAudience | `builder` \| `household` \| `both` |
+| createdAt | default now |
+
+Check constraints:
+- `benefitCents` and `benefitFrequency` are both set or both null.
+- A post has a `listingId` or a `sourceUrl` (or both).
+
+When a post shares a listing, show the **listing's** amount, frequency, and eligibility from the listings table, not copies on the post. This keeps one source of truth.
+
+### Other tables
+
+- **saved_listings:** `userId`, `listingId`, composite PK
+- **saved_posts:** `userId`, `postId`, composite PK (lets builders save unlisted opportunities into their stack)
+- **comments:** `id`, `postId`, `authorId`, `body`, `createdAt`
+- **likes:** `postId`, `userId`, composite PK
+- **capital_stacks:** `userId` (PK), `projectName`, `totalCostCents`, `firstMortgageCents` (nullable) *(added: the "gap" needs a project cost to measure against)*
+- **reports:** `id`, `postId`, `reporterId`, `reason`, `createdAt` *(added: lightweight moderation for community-sourced posts)*
+
+### Indexes
+
+`posts(createdAt desc, id)` for the feed cursor, `comments(postId)`, `posts(targetAudience, createdAt)`, `posts(listingId)`, `listings(targetAudience)`, `listings(agencyId)`.
+
+## Features
+
+### Onboarding
+- On first sign-in, `role` is `unassigned`. The user must choose **Builder**, **Household**, or **I represent an agency** at `/onboarding` before using any signed-in action.
+- Choosing agency creates an `agencies` row with `verified = false`. Unverified agencies can draft listings, but drafts are not public until an admin verifies the agency.
+- Enforce onboarding in the signed-in route layout (a Server Component that reads the session and redirects), **not** with a database query in middleware. Middleware should only do cheap checks.
+- Builder and household users can switch between those two roles from their profile. Becoming an agency always goes through verification.
+
+### Listings (official opportunities)
+- Shows listings filtered by the user's role (`targetAudience = role` or `both`). Agencies and signed-out users see a Builder/Household toggle.
+- Filters: type, category, level, state, frequency, status (open/upcoming/closed/rolling).
+- Each card shows the agency name with a "Verified agency" badge, the Source badge, amount with frequency (e.g., "Up to $292/month", "$40,000 one-time"), deadline, and "last verified" date.
+- Every listing page has a "Share" button that opens the Composer with the listing attached.
+
+### Agency dashboard (`/agency`)
+- Verified agencies create, edit, and close their own listings. Closing sets `closesAt`; listings are never hard-deleted, so they appear under past listings.
+- Shows how many posts share each listing and how many users saved it.
+- Server Actions check: user role is `agency`, the agency is verified, and the listing belongs to that agency.
+
+### Feed (community posts)
+- Posts, newest first, cursor pagination on `(createdAt, id)`, filtered by role the same way as Listings.
+- Posts that share a listing render an embedded `ListingCard`. Posts without one show a "Community post, verify at source" label next to the Source badge.
+- Like, comment, delete own post, report a post. Admins can delete any post.
+- Agencies can post too (e.g., announcing a deadline). Their posts show the agency badge but are still posts, not listings.
+
+### Composer
+- Any signed-in user. Fields: body, attached listing (search picker), state tags, source URL.
+- If **no listing is attached**, show extra fields for an unlisted opportunity: benefit amount, frequency, and eligibility.
+- Validate with zod on both the client and in the Server Action: body 1 to 3000 chars, amount positive, amount and frequency set together, eligibility under 2000 chars, valid state codes, and a listing or source URL required.
+- Store dollars as integer cents. Convert only at the UI boundary.
+
+### Admin (`/admin`)
+- Verify or reject pending agencies.
+- Review reported posts.
+- Promote a community post about an unlisted opportunity into a listing (prefills the listing form from the post).
+
+### My Capital Stack (builders)
+- Persistent sidebar on builder pages.
+- Builder enters project name and total development cost (and optionally the first mortgage).
+- Saved listings and posts are listed with their amounts and frequency. Show **remaining gap = total cost − mortgage − saved one-time funding**, as a stacked bar.
+- **Never add amounts with different frequencies together.** One-time amounts count toward the gap. Recurring amounts are listed separately as recurring support. Items with unknown amounts are shown but not counted.
+- Label totals as "potential funding". Saving a listing does not mean the builder will get it.
+
+### Household view (stretch)
+- Households saving listings see an estimate of monthly money freed up for rent. Convert recurring amounts to monthly (weekly × 52 / 12, quarterly / 3, yearly / 12) and show one-time amounts separately.
+
+### Signed-out users
+- Can read Feed and Listings. Any action (post, like, comment, save) prompts sign-in.
+
+## Vercel + Neon rules
+
+- Use the Neon serverless driver (`@neondatabase/serverless`) with Drizzle. Use the **pooled** `DATABASE_URL` at runtime.
+- Use `DATABASE_URL_UNPOOLED` for `drizzle-kit` migrations.
+- Migrations run before `next build`. Enable Neon **preview branches** in the Vercel integration so preview deployments migrate their own branch and never touch production data.
+- Server Actions must check the session and role themselves. Never trust hidden form fields for `authorId` or role.
+- No local filesystem writes and no in-memory state that must survive between requests.
+
+## Environment variables
+
+```
+DATABASE_URL            # Neon pooled (set by Vercel Marketplace integration)
+DATABASE_URL_UNPOOLED   # Neon direct, for migrations
+AUTH_SECRET
+AUTH_GOOGLE_ID
+AUTH_GOOGLE_SECRET
+```
+
+Never commit `.env*` files except `.env.example`. Update `.env.example` whenever you add a variable.
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev            # local dev server
+pnpm build          # runs db:migrate, then next build
+pnpm lint
+pnpm typecheck
+pnpm test           # Vitest
+pnpm e2e            # Playwright
+pnpm db:generate    # drizzle-kit generate
+pnpm db:migrate     # drizzle-kit migrate
+pnpm db:seed        # tsx src/db/seed.ts
+```
+
+## Conventions
+
+- Package manager is **pnpm**. Do not add npm or yarn lockfiles.
+- TypeScript strict mode. No `any` without a comment explaining why.
+- Server Actions live in `src/lib/actions/`, return `{ ok: true, data } | { ok: false, error }`, and call `revalidatePath` after writes.
+- Validation schemas live in `src/lib/validation/` and are shared by forms and actions.
+- Use shadcn/ui components before writing custom ones.
+- Every schema change gets a generated migration. Never edit an applied migration.
+- Lint, typecheck, and tests must pass before any commit.
+- Commit messages are small, imperative, and **never carry AI co-author trailers**.
+
+## Data accuracy and safety rules
+
+This app deals with real benefits and low-income users. These rules are not optional:
+
+- **Never invent programs, amounts, deadlines, or eligibility rules.** Seed data must come from official sources.
+- Show a visible disclaimer on Listings and post pages: "Information may change. Always confirm eligibility on the official site." The app does not give legal or financial advice.
+- **Collect minimal personal data.** Never ask for or store SSNs, bank details, immigration status, or exact income.
+- Clearly separate listings (official, from verified agencies) from posts (community, unverified). Never let a post display a "Verified" badge unless it is authored by a verified agency, and even then label it as a post.
+- Use plain language (about 8th-grade reading level) in all user-facing copy.
+
+## Testing
+
+- Unit test validation schemas and capital stack math, including mixed frequencies, unknown amounts, and gaps that go negative (overfunded).
+- Integration test each Server Action for: signed out, wrong role, unverified agency, another agency's listing, invalid input, and the happy path.
+- E2E (Playwright):
+  - builder: sign-in → onboarding → browse listings → save listing → capital stack updates
+  - agency: onboarding as agency → admin verifies → create listing → it appears in Listings
+  - any user: share a listing → post appears in Feed with the embedded listing card
+
+## Open questions
+
+- Does `both` audience content appear in both feeds by default?
+- Which seed agency accounts should be verified for the demo?
+
+## Definition of done
+
+Runs under `pnpm dev`, `pnpm lint`, `pnpm typecheck`, and `pnpm test` pass, migrations apply cleanly on a fresh Neon branch, `.env.example` is current, and the feature works on a Vercel preview deployment.
