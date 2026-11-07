@@ -8,6 +8,20 @@
       "when": 1794079990761,
       "tag": "0000_flawless_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794086350110,
+      "tag": "0001_greedy_serpent_society",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794087473112,
+      "tag": "0002_familiar_ben_grimm",
+      "breakpoints": true
     }
   ]
 }

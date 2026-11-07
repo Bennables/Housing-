@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { likes } from "@/db/schema";
 import { guardOnboarded } from "@/lib/guards";
+import { notifyPostAuthor } from "@/lib/notify";
 import { fail, ok, type ActionResult } from "./result";
 
 export async function toggleLike(postId: string): Promise<ActionResult<{ liked: boolean }>> {
@@ -23,6 +24,13 @@ export async function toggleLike(postId: string): Promise<ActionResult<{ liked: 
     try {
       await db.insert(likes).values({ postId, userId: guard.viewer.id }).onConflictDoNothing();
       liked = true;
+      // One notification per person per post, so like, unlike, like does not repeat it.
+      await notifyPostAuthor({
+        type: "like",
+        postId,
+        actorId: guard.viewer.id,
+        dedupeKey: `like:${postId}:${guard.viewer.id}`,
+      });
     } catch {
       return fail("That post no longer exists.");
     }

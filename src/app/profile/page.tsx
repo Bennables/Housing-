@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { EmailSettings } from "@/components/email-settings";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { VerifiedAgencyBadge } from "@/components/source-badge";
 import { Button } from "@/components/ui/button";
 import { LABELS } from "@/lib/constants";
 import { getAgencyForUser } from "@/lib/data/agency";
+import { getEmailSettings } from "@/lib/data/notifications";
+import { isEmailConfigured } from "@/lib/email";
 import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -15,6 +18,9 @@ export default async function ProfilePage() {
   if (!viewer) redirect("/signin?next=/profile");
   if (viewer.role === "unassigned") redirect("/onboarding");
   const agency = viewer.role === "agency" ? await getAgencyForUser(viewer.id) : null;
+  const canEmail =
+    (viewer.role === "household" || viewer.role === "builder") && isEmailConfigured();
+  const email = canEmail ? await getEmailSettings(viewer.id) : null;
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-10">
@@ -35,6 +41,17 @@ export default async function ProfilePage() {
             You are using the site as a {viewer.role}. You can switch any time.
           </p>
           <RoleSwitcher current={viewer.role} />
+        </section>
+      ) : null}
+
+      {canEmail && email ? (
+        <section id="email-alerts" className="space-y-3 rounded-xl border bg-card p-5 shadow-xs">
+          <h2 className="font-semibold">Email alerts</h2>
+          <p className="text-sm text-muted-foreground">
+            Get an email when a new program is added for you. We only use your address for these
+            emails, and we never share it.
+          </p>
+          <EmailSettings accountEmail={email.accountEmail} enabled={email.enabled} />
         </section>
       ) : null}
 
