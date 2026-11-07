@@ -423,26 +423,6 @@ export const EXTRA_LISTINGS: SeedListing[] = [
 
   // ------------------------------------------------------------ Housing and property tax
   {
-    slug: "calhfa-myhome-assistance",
-    name: "CalHFA MyHome Assistance Program",
-    type: "loan",
-    category: "housing",
-    level: "state",
-    state: "CA",
-    summary:
-      "A deferred-payment second loan for a down payment or closing costs. It covers up to 3.5% of the price or appraised value (the lesser) with an FHA first loan, or up to 3% with a conventional first loan. You pay it back when you sell, refinance or transfer the home.",
-    eligibility:
-      "Homebuyers who use a CalHFA first mortgage, meet CalHFA income limits, and buy a primary residence. You cannot take cash back from the loan. Talk to a CalHFA-approved lender.",
-    url: "https://www.calhfa.ca.gov/homebuyer/programs/myhome.htm",
-    targetAudience: "household",
-    amountMinCents: null,
-    amountMaxCents: null,
-    frequency: null,
-    opensAt: null,
-    closesAt: null,
-    sourceCheckedAt: null,
-  },
-  {
     // Applications open Oct 1, 2026. The filing deadline is Feb 10, 2027.
     // TODO(verify): the 2026-27 income cap of $57,002 comes from a State Controller press release.
     slug: "property-tax-postponement",

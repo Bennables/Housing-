@@ -1,5 +1,7 @@
 import { config } from "dotenv";
 import { inArray, sql } from "drizzle-orm";
+import { EXTRA_LISTINGS, EXTRA_POSTS } from "./seed-extra";
+import { CHECKED, utc, type SeedListing } from "./seed-types";
 
 config({ path: ".env.local" });
 config();
@@ -13,39 +15,7 @@ config();
 // - Closed listings need a real date from the source. A program that is closed with no stated
 //   date cannot be shown as closed, so it is left out (see the CalHome note at the bottom).
 
-type SeedListing = {
-  slug: string;
-  name: string;
-  type: "grant" | "benefit" | "loan" | "tax_credit" | "zoning_bonus" | "other";
-  category:
-    | "food"
-    | "health"
-    | "utilities"
-    | "rent"
-    | "childcare"
-    | "income"
-    | "development"
-    | "adu"
-    | "homebuying"
-    | "other";
-  level: "federal" | "state" | "county" | "city";
-  state: string | null;
-  summary: string;
-  eligibility: string | null;
-  url: string;
-  targetAudience: "builder" | "household" | "both";
-  amountMinCents: number | null;
-  amountMaxCents: number | null;
-  frequency: "one_time" | "weekly" | "monthly" | "quarterly" | "yearly" | null;
-  opensAt: Date | null;
-  closesAt: Date | null;
-  sourceCheckedAt: string | null;
-};
-
-const CHECKED = "2026-11-07";
-const utc = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
-
-const SEED_LISTINGS: SeedListing[] = [
+const BASE_LISTINGS: SeedListing[] = [
   // ---------------------------------------------------------------- Builder
   {
     slug: "low-income-housing-tax-credit",
@@ -375,6 +345,8 @@ const SEED_LISTINGS: SeedListing[] = [
   },
 ];
 
+const SEED_LISTINGS: SeedListing[] = [...BASE_LISTINGS, ...EXTRA_LISTINGS];
+
 // Left out on purpose: HCD CalHome. Its page says "No longer accepting applications" but gives no
 // date, and a closed listing needs a real date. Add it once the closing date is known.
 
@@ -510,6 +482,7 @@ async function main() {
             "calfresh",
             "housing-choice-vouchers-section-8",
             "low-income-housing-tax-credit",
+            ...EXTRA_POSTS.flatMap((p) => (p.listingSlug ? [p.listingSlug] : [])),
           ]),
         )
     ).map((r) => [r.slug, r.id]),
@@ -570,8 +543,21 @@ async function main() {
       targetAudience: "both",
       createdAt: minutesAgo(480),
     },
+    ...EXTRA_POSTS.map((p, i) => {
+      const listingId = p.listingSlug ? bySlug.get(p.listingSlug) : undefined;
+      if (p.listingSlug && !listingId) throw new Error(`Seed listing missing: ${p.listingSlug}`);
+      return {
+        authorId: p.author,
+        body: p.body,
+        listingId: listingId ?? null,
+        sourceUrl: p.sourceUrl ?? null,
+        states: p.states ?? [],
+        targetAudience: p.targetAudience,
+        createdAt: minutesAgo(600 + i * 60),
+      };
+    }),
   ]);
-  console.log("Seeded demo accounts, 2 demo agencies and 5 demo posts.");
+  console.log(`Seeded demo accounts, 2 demo agencies and ${5 + EXTRA_POSTS.length} demo posts.`);
 }
 
 main()
