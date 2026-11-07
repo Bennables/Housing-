@@ -2,12 +2,14 @@ import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 import { Disclaimer } from "@/components/disclaimer";
 import { CommentForm } from "@/components/feed/comment-form";
 import { CommentList } from "@/components/feed/comment-list";
 import { PostCard } from "@/components/feed/post-card";
 import { Button } from "@/components/ui/button";
 import { viewerStateOf } from "@/components/viewer-state";
+import { recordPostView } from "@/lib/data/interests";
 import { getComments, getPost } from "@/lib/data/posts";
 import { getViewer } from "@/lib/session";
 
@@ -20,6 +22,15 @@ export default async function PostPage({ params }: Props) {
   const viewer = await getViewer();
   const post = await getPost(id, viewer);
   if (!post) notFound();
+  // Signed-in views feed the interest profile used for text alerts. Logged after the response.
+  if (viewer && post.author.id !== viewer.id) {
+    const viewerId = viewer.id;
+    after(() =>
+      recordPostView(viewerId, post.id).catch((error: unknown) =>
+        console.error("[views] could not record view", error),
+      ),
+    );
+  }
   const comments = await getComments(post.id);
   const viewerState = viewerStateOf(viewer);
 

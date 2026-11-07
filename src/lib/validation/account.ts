@@ -1,9 +1,39 @@
 import { z } from "zod";
 import { AGENCY_LEVELS } from "@/lib/constants";
-import { checkDollars, httpUrl, optionalDollars, requiredText } from "./common";
+import { normalizePhone } from "@/lib/phone";
+import { checkDollars, emptyToUndefined, httpUrl, optionalDollars, requiredText } from "./common";
+
+/**
+ * Text alerts. A phone number is only kept while the person has opted in, so turning texts off
+ * also clears the number.
+ */
+export const smsSettingsSchema = z
+  .object({
+    smsOptIn: z.boolean().default(false),
+    phone: z.preprocess(emptyToUndefined, z.string().trim().max(32).optional()),
+  })
+  .transform((value, ctx) => {
+    if (!value.smsOptIn) return { smsOptIn: false, phone: null };
+    const phone = value.phone ? normalizePhone(value.phone) : null;
+    if (!phone) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["phone"],
+        message: value.phone
+          ? "Enter a phone number like (555) 123-4567."
+          : "Enter your phone number to get texts.",
+      });
+      return z.NEVER;
+    }
+    return { smsOptIn: true, phone };
+  });
+
+export type SmsSettings = z.output<typeof smsSettingsSchema>;
 
 export const chooseRoleSchema = z.object({
   role: z.enum(["household", "builder"], { error: "Pick household or builder." }),
+  // Optional at onboarding. Switching roles later leaves text settings alone.
+  sms: smsSettingsSchema.optional(),
 });
 
 export const agencyInputSchema = z.object({

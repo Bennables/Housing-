@@ -258,6 +258,11 @@ DATABASE_URL_UNPOOLED   # Neon direct, for migrations
 AUTH_SECRET
 AUTH_GOOGLE_ID
 AUTH_GOOGLE_SECRET
+ANTHROPIC_API_KEY       # optional: text alerts (Claude match check)
+AWS_REGION              # optional: text alerts (SNS)
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+APP_URL                 # optional: public URL used in text links
 ```
 
 Never commit `.env*` files except `.env.example`. Update `.env.example` whenever you add a variable.

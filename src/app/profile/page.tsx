@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RoleSwitcher } from "@/components/role-switcher";
+import { SmsSettingsForm } from "@/components/sms-settings-form";
 import { VerifiedAgencyBadge } from "@/components/source-badge";
 import { Button } from "@/components/ui/button";
 import { LABELS } from "@/lib/constants";
 import { getAgencyForUser } from "@/lib/data/agency";
+import { getSmsSettings } from "@/lib/data/account";
+import { formatPhone } from "@/lib/phone";
 import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -14,7 +17,10 @@ export default async function ProfilePage() {
   const viewer = await getViewer();
   if (!viewer) redirect("/signin?next=/profile");
   if (viewer.role === "unassigned") redirect("/onboarding");
-  const agency = viewer.role === "agency" ? await getAgencyForUser(viewer.id) : null;
+  const [agency, sms] = await Promise.all([
+    viewer.role === "agency" ? getAgencyForUser(viewer.id) : null,
+    getSmsSettings(viewer.id),
+  ]);
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-10">
@@ -35,6 +41,16 @@ export default async function ProfilePage() {
             You are using the site as a {viewer.role}. You can switch any time.
           </p>
           <RoleSwitcher current={viewer.role} />
+        </section>
+      ) : null}
+
+      {viewer.role === "household" || viewer.role === "builder" ? (
+        <section className="space-y-3 rounded-xl border bg-card p-5 shadow-xs">
+          <h2 className="font-semibold">Text alerts</h2>
+          <SmsSettingsForm
+            initialOptIn={sms.smsOptIn}
+            initialPhone={sms.phone ? formatPhone(sms.phone) : ""}
+          />
         </section>
       ) : null}
 
