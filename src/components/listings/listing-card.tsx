@@ -14,9 +14,9 @@ import type { ListingView } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLE: Record<ListingStatus, string> = {
-  open: "bg-emerald-100 text-emerald-900",
-  rolling: "bg-sky-100 text-sky-900",
-  upcoming: "bg-amber-100 text-amber-900",
+  open: "bg-accent text-accent-foreground",
+  rolling: "bg-secondary text-secondary-foreground",
+  upcoming: "bg-blaze/15 text-blaze",
   closed: "bg-muted text-muted-foreground",
 };
 
@@ -42,7 +42,7 @@ export function ListingCard({
   return (
     <article
       aria-label={`Listing: ${listing.name}`}
-      className={cn("rounded-xl border bg-card p-4", embedded ? "bg-muted/40" : "shadow-xs")}
+      className={cn("rounded-2xl border bg-card p-4 sm:p-5", embedded ? "bg-muted/40" : "lift")}
     >
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge className={cn("border-transparent", STATUS_STYLE[status])}>
@@ -57,7 +57,7 @@ export function ListingCard({
         <Badge variant="outline">For {LABELS.audience[listing.targetAudience].toLowerCase()}</Badge>
       </div>
 
-      <h3 className={cn("mt-3 leading-snug font-semibold", detail ? "text-2xl" : "text-lg")}>
+      <h3 className={cn("mt-3 leading-snug", detail ? "text-3xl" : "text-xl")}>
         {detail ? (
           listing.name
         ) : (
@@ -76,7 +76,14 @@ export function ListingCard({
         {listing.summary}
       </p>
 
-      {amount ? <p className="mt-3 text-base font-semibold text-primary">{amount}</p> : null}
+      {amount ? (
+        <div className="mt-3 inline-block rounded-xl border border-dashed border-foreground/30 bg-background px-3 py-2">
+          <p className="font-mono text-[0.65rem] tracking-widest text-muted-foreground uppercase">
+            Amount
+          </p>
+          <p className="font-mono text-sm font-semibold">{amount}</p>
+        </div>
+      ) : null}
 
       {deadline ? (
         <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">

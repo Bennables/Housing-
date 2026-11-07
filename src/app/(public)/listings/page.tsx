@@ -40,8 +40,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: Sea
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Listings</h1>
+      <div className="rise space-y-1">
+        <h1 className="text-4xl leading-tight">Listings</h1>
         <p className="text-sm text-muted-foreground">
           Official programs, grants, loans and bonuses from verified agencies, with a link to the
           source for each.
@@ -77,8 +77,12 @@ export default async function ListingsPage({ searchParams }: { searchParams: Sea
         </EmptyState>
       ) : (
         <ul className="space-y-4">
-          {listings.map((listing) => (
-            <li key={listing.id}>
+          {listings.map((listing, i) => (
+            <li
+              key={listing.id}
+              className="rise"
+              style={{ "--i": Math.min(i, 6) } as React.CSSProperties}
+            >
               <ListingCard listing={listing} viewerState={viewerState} />
             </li>
           ))}

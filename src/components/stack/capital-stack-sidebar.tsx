@@ -4,11 +4,25 @@ import { LABELS } from "@/lib/constants";
 import { getCapitalStack, getSavedItems } from "@/lib/data/stack";
 import { centsToDollarsString, formatMoney } from "@/lib/money";
 
-function Row({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+function Row({
+  label,
+  value,
+  strong = false,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  accent?: boolean;
+}) {
   return (
     <div className="flex items-baseline justify-between gap-3 text-sm">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={strong ? "font-semibold" : "font-medium"}>{value}</dd>
+      <dd
+        className={`font-mono ${strong ? "font-semibold" : "font-medium"} ${accent ? "text-blaze" : ""}`}
+      >
+        {value}
+      </dd>
     </div>
   );
 }
@@ -18,8 +32,8 @@ export async function CapitalStackSidebar({ userId }: { userId: string }) {
   const [stack, items] = await Promise.all([getCapitalStack(userId), getSavedItems(userId)]);
 
   return (
-    <section aria-labelledby="stack-title" className="rounded-xl border bg-card p-4 shadow-xs">
-      <h2 id="stack-title" className="font-semibold">
+    <section aria-labelledby="stack-title" className="rise rounded-2xl border bg-card p-4 sm:p-5">
+      <h2 id="stack-title" className="text-xl">
         My Capital Stack
       </h2>
       <p className="mt-0.5 text-xs text-muted-foreground">
@@ -132,21 +146,22 @@ function StackBody({
               ? `overfunded by ${formatMoney(summary.overfundedCents)}`
               : `${formatMoney(summary.remainingGapCents)} still to find`
           }`}
-          className="flex h-3 w-full overflow-hidden rounded-full bg-muted"
+          className="flex h-4 w-full gap-0.5 overflow-hidden rounded-lg bg-blaze/20"
         >
-          <div className="bg-slate-500" style={{ width: `${bar.mortgage}%` }} />
+          <div className="bg-foreground" style={{ width: `${bar.mortgage}%` }} />
           <div className="bg-primary" style={{ width: `${bar.saved}%` }} />
-          <div className="bg-amber-300" style={{ width: `${bar.gap}%` }} />
+          <div className="bg-blaze/20" style={{ width: `${bar.gap}%` }} />
         </div>
         <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <li className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-slate-500" aria-hidden /> Mortgage
+            <span className="size-2 rounded-full bg-foreground" aria-hidden /> Mortgage
           </li>
           <li className="flex items-center gap-1.5">
             <span className="size-2 rounded-full bg-primary" aria-hidden /> Saved funding
           </li>
           <li className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-amber-300" aria-hidden /> Gap
+            <span className="size-2 rounded-full border border-blaze/50 bg-blaze/20" aria-hidden />{" "}
+            Gap
           </li>
         </ul>
       </div>
@@ -163,7 +178,12 @@ function StackBody({
               strong
             />
           ) : (
-            <Row label="Remaining gap" value={formatMoney(summary.remainingGapCents)} strong />
+            <Row
+              label="Remaining gap"
+              value={formatMoney(summary.remainingGapCents)}
+              strong
+              accent
+            />
           )}
         </div>
       </dl>

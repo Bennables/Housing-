@@ -45,17 +45,17 @@ export function OnboardingForm() {
               type="button"
               onClick={() => pick(role)}
               disabled={pending}
-              className="flex h-full w-full flex-col items-start gap-2 rounded-xl border bg-card p-4 text-left shadow-xs transition-colors hover:border-primary hover:bg-accent/40 disabled:opacity-60"
+              className="lift flex h-full w-full flex-col items-start gap-2 rounded-2xl border bg-card p-5 text-left transition-colors hover:border-primary hover:bg-accent/40 disabled:opacity-60"
             >
               <Icon className="size-6 text-primary" aria-hidden />
-              <span className="font-semibold">{title}</span>
+              <span className="font-heading text-xl">{title}</span>
               <span className="text-sm text-muted-foreground">{text}</span>
             </button>
           </li>
         ))}
       </ul>
 
-      <div className="rounded-xl border bg-card p-4 shadow-xs">
+      <div className="rounded-2xl border bg-card p-5">
         <button
           type="button"
           onClick={() => setShowAgency((v) => !v)}
