@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
+    "@neon/config": "^1.12.1",
+    "@neon/env": "^2.0.1",
     "@neondatabase/serverless": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
