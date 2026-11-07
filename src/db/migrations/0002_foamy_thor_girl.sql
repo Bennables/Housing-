@@ -1,1 +1,0 @@
-ALTER TYPE "public"."listing_category" ADD VALUE 'homebuying' BEFORE 'other';

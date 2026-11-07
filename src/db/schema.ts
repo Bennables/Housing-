@@ -17,10 +17,12 @@ import {
 import {
   AGENCY_LEVELS,
   AUDIENCES,
+  EMAIL_STATUSES,
   FREQUENCIES,
   LISTING_CATEGORIES,
   LISTING_LEVELS,
   LISTING_TYPES,
+  NOTIFICATION_TYPES,
   USER_ROLES,
 } from "@/lib/constants";
 
@@ -40,6 +42,8 @@ export const listingTypeEnum = pgEnum("listing_type", LISTING_TYPES);
 export const listingCategoryEnum = pgEnum("listing_category", LISTING_CATEGORIES);
 export const listingLevelEnum = pgEnum("listing_level", LISTING_LEVELS);
 export const audienceEnum = pgEnum("audience", AUDIENCES);
+export const notificationTypeEnum = pgEnum("notification_type", NOTIFICATION_TYPES);
+export const emailStatusEnum = pgEnum("email_status", EMAIL_STATUSES);
 
 // ---------------------------------------------------------------------------
 // Auth.js tables (standard @auth/drizzle-adapter shape, plus role and isAdmin on users)
@@ -356,8 +360,8 @@ export const postViews = pgTable(
 );
 
 // Texts we sent (or tried to send) about a post. The unique pair stops duplicate texts.
-export const notifications = pgTable(
-  "notifications",
+export const smsNotifications = pgTable(
+  "sms_notifications",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: text("user_id")
@@ -374,10 +378,51 @@ export const notifications = pgTable(
     createdAt: ts("created_at").notNull().defaultNow(),
   },
   (t) => [
-    unique("notifications_one_per_user_per_post").on(t.userId, t.postId),
-    index("notifications_user_created_idx").on(t.userId, t.createdAt.desc()),
+    unique("sms_notifications_one_per_user_per_post").on(t.userId, t.postId),
+    index("sms_notifications_user_created_idx").on(t.userId, t.createdAt.desc()),
   ],
 );
+
+// ---------------------------------------------------------------------------
+// notifications (written when something happens, so reading them is one indexed lookup)
+// ---------------------------------------------------------------------------
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: notificationTypeEnum("type").notNull(),
+    // Who caused it (the commenter or liker). Null for new listings.
+    actorId: text("actor_id").references(() => users.id, { onDelete: "cascade" }),
+    listingId: uuid("listing_id").references(() => listings.id, { onDelete: "cascade" }),
+    postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),
+    // Stops the same event from notifying the same person twice, for example a like, unlike, like.
+    dedupeKey: text("dedupe_key").notNull(),
+    readAt: ts("read_at"),
+    emailStatus: emailStatusEnum("email_status").notNull().default("none"),
+    emailSentAt: ts("email_sent_at"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    unique("notifications_user_dedupe").on(t.userId, t.dedupeKey),
+    index("notifications_user_created_idx").on(t.userId, t.createdAt.desc()),
+    index("notifications_email_pending_idx")
+      .on(t.createdAt)
+      .where(sql`${t.emailStatus} = 'pending'`),
+  ],
+);
+
+// A row means the person turned on email alerts. Opting out deletes the row.
+// The address itself is the sign-in email on users, so we store no extra personal data.
+export const emailSubscriptions = pgTable("email_subscriptions", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  consentedAt: ts("consented_at").notNull().defaultNow(),
+});
 
 export type User = typeof users.$inferSelect;
 export type Agency = typeof agencies.$inferSelect;

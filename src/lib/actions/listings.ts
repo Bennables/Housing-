@@ -2,10 +2,12 @@
 
 import { and, eq, like, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
 import { listings } from "@/db/schema";
 import { guardAdmin, guardVerifiedAgency } from "@/lib/guards";
+import { deliverPendingEmail, notifyNewListing } from "@/lib/notify";
 import { escapeLike } from "@/lib/data/listings";
 import { firstError } from "@/lib/validation/common";
 import { listingInputSchema, slugify } from "@/lib/validation/listing";
@@ -62,12 +64,22 @@ export async function saveListing(
   try {
     if (listingId === null) {
       const slug = await uniqueSlug(input.name);
-      await db.insert(listings).values({
-        ...input,
-        slug,
-        agencyId: actor.agencyId,
+      const [created] = await db
+        .insert(listings)
+        .values({
+          ...input,
+          slug,
+          agencyId: actor.agencyId,
+          createdById: actor.viewer.id,
+        })
+        .returning({ id: listings.id });
+      // Tell everyone this listing is meant for. Emails go out after the response is sent.
+      await notifyNewListing({
+        id: created.id,
+        targetAudience: input.targetAudience,
         createdById: actor.viewer.id,
       });
+      after(deliverPendingEmail);
       revalidateListings(slug);
       return ok({ slug });
     }

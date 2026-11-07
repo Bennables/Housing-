@@ -4,7 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { agencies, listings, notifications, posts, postViews, users } from "@/db/schema";
+import { agencies, listings, smsNotifications, posts, postViews, users } from "@/db/schema";
 import { buildSmsText, postTags, topTags } from "@/lib/interests";
 import { getInterestProfiles } from "@/lib/data/interests";
 import { appUrl, sendSms, smsConfigured } from "./sms";
@@ -94,21 +94,21 @@ async function run(postId: string): Promise<void> {
 
     // Claim the (user, post) pair first. If the row already exists, someone else sent it.
     const [claimed] = await db
-      .insert(notifications)
+      .insert(smsNotifications)
       .values({ userId: candidate.id, postId: post.post.id, reason: match.reason })
       .onConflictDoNothing()
-      .returning({ id: notifications.id });
+      .returning({ id: smsNotifications.id });
     if (!claimed) continue;
 
     const result = await sendSms(candidate.phone, message);
     await db
-      .update(notifications)
+      .update(smsNotifications)
       .set(
         result.ok
           ? { status: "sent", providerMessageId: result.messageId }
           : { status: "failed", reason: `${match.reason} | send error: ${result.error}` },
       )
-      .where(eq(notifications.id, claimed.id));
+      .where(eq(smsNotifications.id, claimed.id));
   }
 }
 
@@ -130,9 +130,9 @@ async function findCandidates(
         sql`exists (select 1 from ${postViews} where ${postViews.userId} = ${users.id})`,
         // No repeat text about this post, and at most one text per person per day.
         sql`not exists (
-          select 1 from ${notifications}
-          where ${notifications.userId} = ${users.id}
-            and (${notifications.postId} = ${postId} or ${notifications.createdAt} > now() - interval '1 day')
+          select 1 from ${smsNotifications}
+          where ${smsNotifications.userId} = ${users.id}
+            and (${smsNotifications.postId} = ${postId} or ${smsNotifications.createdAt} > now() - interval '1 day')
         )`,
       ),
     )

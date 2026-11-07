@@ -11,9 +11,12 @@ import { REPORT_REASONS } from "@/lib/constants";
 export function ReportButton({
   postId,
   viewerState,
+  className,
 }: {
   postId: string;
   viewerState: ViewerState;
+  /** Replaces the default look so the button can match its neighbours. */
+  className?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -49,7 +52,10 @@ export function ReportButton({
       <button
         type="button"
         onClick={start}
-        className="inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent"
+        className={
+          className ??
+          "inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent"
+        }
       >
         <Flag className="size-4" aria-hidden />
         Report

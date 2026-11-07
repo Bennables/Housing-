@@ -2,6 +2,7 @@ import { Home } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { MainNav } from "@/components/main-nav";
+import { NotificationBell, NotificationBellFallback } from "@/components/notification-bell";
 import { UserMenu } from "@/components/user-menu";
 import { getViewer } from "@/lib/session";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,17 @@ async function HeaderAccount() {
     );
   }
   return (
-    <UserMenu name={viewer.name} image={viewer.image} role={viewer.role} isAdmin={viewer.isAdmin} />
+    <div className="flex items-center gap-1.5">
+      <Suspense fallback={<NotificationBellFallback />}>
+        <NotificationBell userId={viewer.id} />
+      </Suspense>
+      <UserMenu
+        name={viewer.name}
+        image={viewer.image}
+        role={viewer.role}
+        isAdmin={viewer.isAdmin}
+      />
+    </div>
   );
 }
 

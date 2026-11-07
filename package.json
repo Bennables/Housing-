@@ -20,6 +20,7 @@
     "@anthropic-ai/sdk": "^1.6.0",
     "@auth/drizzle-adapter": "^1.11.3",
     "@aws-sdk/client-sns": "^3.1164.0",
+    "@aws-sdk/client-sesv2": "^3.1164.0",
     "@neon/config": "^1.12.1",
     "@neon/env": "^2.0.1",
     "@neondatabase/serverless": "^1.2.0",

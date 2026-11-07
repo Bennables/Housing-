@@ -1,6 +1,6 @@
 {
-  "id": "b706e135-fe66-42b0-90fc-5d0c3ba0d453",
-  "prevId": "5a52561c-cda0-4c9a-a5ea-c0ffae342249",
+  "id": "b0786abf-c89b-4557-aed9-ef712ef9841b",
+  "prevId": "b4ad3e28-dcf1-4d1b-a4e6-2eec41e9d221",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -355,6 +355,46 @@
       },
       "isRLSEnabled": false
     },
+    "public.email_subscriptions": {
+      "name": "email_subscriptions",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "consented_at": {
+          "name": "consented_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "email_subscriptions_user_id_users_id_fk": {
+          "name": "email_subscriptions_user_id_users_id_fk",
+          "tableFrom": "email_subscriptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.likes": {
       "name": "likes",
       "schema": "",
@@ -670,28 +710,54 @@
           "primaryKey": false,
           "notNull": true
         },
-        "post_id": {
-          "name": "post_id",
-          "type": "uuid",
+        "type": {
+          "name": "type",
+          "type": "notification_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
-        "reason": {
-          "name": "reason",
+        "actor_id": {
+          "name": "actor_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "status": {
-          "name": "status",
+        "listing_id": {
+          "name": "listing_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dedupe_key": {
+          "name": "dedupe_key",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
+          "notNull": true
         },
-        "provider_message_id": {
-          "name": "provider_message_id",
-          "type": "text",
+        "read_at": {
+          "name": "read_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_status": {
+          "name": "email_status",
+          "type": "email_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'none'"
+        },
+        "email_sent_at": {
+          "name": "email_sent_at",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -724,6 +790,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "notifications_email_pending_idx": {
+          "name": "notifications_email_pending_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"notifications\".\"email_status\" = 'pending'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -733,6 +815,32 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "notifications_actor_id_users_id_fk": {
+          "name": "notifications_actor_id_users_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "notifications_listing_id_listings_id_fk": {
+          "name": "notifications_listing_id_listings_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "listings",
+          "columnsFrom": [
+            "listing_id"
           ],
           "columnsTo": [
             "id"
@@ -756,111 +864,15 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "notifications_one_per_user_per_post": {
-          "name": "notifications_one_per_user_per_post",
+        "notifications_user_dedupe": {
+          "name": "notifications_user_dedupe",
           "nullsNotDistinct": false,
           "columns": [
             "user_id",
-            "post_id"
+            "dedupe_key"
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.post_views": {
-      "name": "post_views",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "post_id": {
-          "name": "post_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "view_count": {
-          "name": "view_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "viewed_at": {
-          "name": "viewed_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "post_views_user_viewed_idx": {
-          "name": "post_views_user_viewed_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "viewed_at",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "post_views_user_id_users_id_fk": {
-          "name": "post_views_user_id_users_id_fk",
-          "tableFrom": "post_views",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "post_views_post_id_posts_id_fk": {
-          "name": "post_views_post_id_posts_id_fk",
-          "tableFrom": "post_views",
-          "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "post_views_user_id_post_id_pk": {
-          "name": "post_views_user_id_post_id_pk",
-          "columns": [
-            "user_id",
-            "post_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1370,19 +1382,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "phone": {
-          "name": "phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sms_opt_in": {
-          "name": "sms_opt_in",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         }
       },
       "indexes": {},
@@ -1398,16 +1397,7 @@
         }
       },
       "policies": {},
-      "checkConstraints": {
-        "users_phone_e164": {
-          "name": "users_phone_e164",
-          "value": "\"users\".\"phone\" is null or \"users\".\"phone\" ~ '^\\+[1-9][0-9]{7,14}$'"
-        },
-        "users_sms_opt_in_needs_phone": {
-          "name": "users_sms_opt_in_needs_phone",
-          "value": "not \"users\".\"sms_opt_in\" or \"users\".\"phone\" is not null"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.verification_tokens": {
@@ -1471,6 +1461,17 @@
         "both"
       ]
     },
+    "public.email_status": {
+      "name": "email_status",
+      "schema": "public",
+      "values": [
+        "none",
+        "pending",
+        "sending",
+        "sent",
+        "failed"
+      ]
+    },
     "public.frequency": {
       "name": "frequency",
       "schema": "public",
@@ -1494,7 +1495,6 @@
         "income",
         "development",
         "adu",
-        "homebuying",
         "other"
       ]
     },
@@ -1518,6 +1518,15 @@
         "tax_credit",
         "zoning_bonus",
         "other"
+      ]
+    },
+    "public.notification_type": {
+      "name": "notification_type",
+      "schema": "public",
+      "values": [
+        "new_listing",
+        "comment",
+        "like"
       ]
     },
     "public.user_role": {

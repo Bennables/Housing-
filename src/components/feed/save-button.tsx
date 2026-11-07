@@ -13,12 +13,15 @@ export function SaveButton({
   saved,
   viewerState,
   next,
+  className,
 }: {
   kind: "listing" | "post";
   id: string;
   saved: boolean;
   viewerState: ViewerState;
   next: string;
+  /** Replaces the default look so the button can match its neighbours. */
+  className?: string;
 }) {
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(saved);
@@ -47,8 +50,9 @@ export function SaveButton({
         disabled={pending}
         aria-pressed={isSaved}
         className={cn(
-          "inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60",
-          isSaved ? "text-primary" : "text-muted-foreground",
+          className ??
+            "inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-60",
+          isSaved ? "text-primary" : className ? undefined : "text-muted-foreground",
         )}
       >
         <Bookmark className={cn("size-4", isSaved && "fill-current")} aria-hidden />

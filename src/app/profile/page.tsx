@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { EmailSettings } from "@/components/email-settings";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { SmsSettingsForm } from "@/components/sms-settings-form";
 import { VerifiedAgencyBadge } from "@/components/source-badge";
@@ -8,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { LABELS } from "@/lib/constants";
 import { getAgencyForUser } from "@/lib/data/agency";
 import { getSmsSettings } from "@/lib/data/account";
+import { getEmailSettings } from "@/lib/data/notifications";
+import { isEmailConfigured } from "@/lib/email";
 import { formatPhone } from "@/lib/phone";
 import { getViewer } from "@/lib/session";
 
@@ -21,6 +24,9 @@ export default async function ProfilePage() {
     viewer.role === "agency" ? getAgencyForUser(viewer.id) : null,
     getSmsSettings(viewer.id),
   ]);
+  const canEmail =
+    (viewer.role === "household" || viewer.role === "builder") && isEmailConfigured();
+  const email = canEmail ? await getEmailSettings(viewer.id) : null;
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-10">
@@ -51,6 +57,17 @@ export default async function ProfilePage() {
             initialOptIn={sms.smsOptIn}
             initialPhone={sms.phone ? formatPhone(sms.phone) : ""}
           />
+        </section>
+      ) : null}
+
+      {canEmail && email ? (
+        <section id="email-alerts" className="space-y-3 rounded-xl border bg-card p-5 shadow-xs">
+          <h2 className="font-semibold">Email alerts</h2>
+          <p className="text-sm text-muted-foreground">
+            Get an email when a new program is added for you. We only use your address for these
+            emails, and we never share it.
+          </p>
+          <EmailSettings accountEmail={email.accountEmail} enabled={email.enabled} />
         </section>
       ) : null}
 

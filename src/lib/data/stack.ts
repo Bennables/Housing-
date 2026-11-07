@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { agencies, capitalStacks, listings, posts, savedListings, savedPosts } from "@/db/schema";
 import type { StackItem } from "@/lib/capital-stack";
@@ -73,4 +73,13 @@ export async function getCapitalStack(userId: string) {
 function truncate(text: string, max: number) {
   const clean = text.replace(/\s+/g, " ").trim();
   return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean;
+}
+
+/** How many listings and posts the user saved. Used by the profile card. */
+export async function getSavedCounts(userId: string): Promise<{ listings: number; posts: number }> {
+  const [[listingRow], [postRow]] = await Promise.all([
+    db.select({ n: count() }).from(savedListings).where(eq(savedListings.userId, userId)),
+    db.select({ n: count() }).from(savedPosts).where(eq(savedPosts.userId, userId)),
+  ]);
+  return { listings: listingRow?.n ?? 0, posts: postRow?.n ?? 0 };
 }

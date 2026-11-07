@@ -30,6 +30,10 @@ export const LISTING_CATEGORIES = [
   "development",
   "adu",
   "homebuying",
+  "housing",
+  "insurance",
+  "transportation",
+  "education",
   "other",
 ] as const;
 export type ListingCategory = (typeof LISTING_CATEGORIES)[number];
@@ -42,6 +46,16 @@ export type Audience = (typeof AUDIENCES)[number];
 
 export const LISTING_STATUSES = ["open", "upcoming", "rolling", "closed"] as const;
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
+
+export const NOTIFICATION_TYPES = ["new_listing", "comment", "like"] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/** Only these types are also sent as email. Likes and comments stay in the app. */
+export const EMAIL_NOTIFICATION_TYPES: readonly NotificationType[] = ["new_listing"];
+
+// none: no email for this notification. pending: waiting to send. sending: claimed by a sender.
+export const EMAIL_STATUSES = ["none", "pending", "sending", "sent", "failed"] as const;
+export type EmailStatus = (typeof EMAIL_STATUSES)[number];
 
 export const REPORT_REASONS = [
   "Wrong or outdated information",
@@ -77,6 +91,10 @@ export const LABELS = {
     development: "Development",
     adu: "ADU",
     homebuying: "Buying a home",
+    housing: "Housing",
+    insurance: "Insurance",
+    transportation: "Transportation",
+    education: "Education",
     other: "Other",
   },
   level: {

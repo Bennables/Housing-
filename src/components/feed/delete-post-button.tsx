@@ -10,10 +10,13 @@ export function DeletePostButton({
   postId,
   onDeleted,
   redirectTo,
+  className,
 }: {
   postId: string;
   onDeleted?: (id: string) => void;
   redirectTo?: string;
+  /** Replaces the default look so the button can match its neighbours. */
+  className?: string;
 }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
@@ -38,7 +41,10 @@ export function DeletePostButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+        className={
+          className ??
+          "inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+        }
       >
         <Trash2 className="size-4" aria-hidden />
         Delete
