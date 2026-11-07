@@ -26,6 +26,7 @@ type SeedListing = {
     | "income"
     | "development"
     | "adu"
+    | "homebuying"
     | "other";
   level: "federal" | "state" | "county" | "city";
   state: string | null;
@@ -322,6 +323,54 @@ const SEED_LISTINGS: SeedListing[] = [
     frequency: "monthly",
     opensAt: null,
     closesAt: utc("2024-06-01"),
+    sourceCheckedAt: null,
+  },
+  {
+    // Closed: the page says the application period "is now CLOSED" and the portal closed March 16
+    // (2026). Funds go out by random drawing, not first come, first served.
+    // TODO(verify): the page also has a 05/20/2026 update that says "The next round of DFA vouchers
+    // have been released", which conflicts with CLOSED. Confirm the status in the voucher portal.
+    slug: "calhfa-dream-for-all",
+    name: "CalHFA Dream For All Shared Appreciation Loan",
+    type: "loan",
+    category: "homebuying",
+    level: "state",
+    state: "CA",
+    summary:
+      "Down payment and closing cost help for first-generation homebuyers, used with the Dream For All conventional first mortgage. It covers up to 20% of the home price, not more than $150,000. It is a loan. When the home is sold, transferred or the first mortgage is paid off, you repay the loan plus a share of how much the home gained in value. The usual share is 20% of the gain, and it is lower for households at or below 80% of area median income. Funds go out by random drawing, not first come, first served.",
+    eligibility:
+      "One borrower must be a first-generation homebuyer and a current California resident. All borrowers must be first-time homebuyers. Household income must be within CalHFA income limits for the county where you buy. One borrower who will live in the home must finish an approved homebuyer education course.",
+    url: "https://calhfa.ca.gov/dream/",
+    targetAudience: "household",
+    amountMinCents: null,
+    amountMaxCents: 15_000_000,
+    frequency: "one_time",
+    opensAt: utc("2026-02-24"),
+    closesAt: utc("2026-03-16"),
+    sourceCheckedAt: CHECKED,
+  },
+  {
+    // The percentages come from CalHFA's loan programs page. The cap is a percent of the price, so
+    // no dollar amount or frequency is set.
+    // TODO(verify): eligibility comes from a search summary of the MyHome fact sheet. Income limits
+    // are set by county on the fact sheet.
+    slug: "calhfa-myhome-assistance",
+    name: "CalHFA MyHome Assistance Program",
+    type: "loan",
+    category: "homebuying",
+    level: "state",
+    state: "CA",
+    summary:
+      "A deferred-payment loan for a down payment or closing costs. With an FHA loan it covers up to the lesser of 3.5% of the purchase price or appraised value. With a conventional loan it covers up to the lesser of 3%. You use it together with a CalHFA first mortgage, and it sits in second place behind that mortgage.",
+    eligibility:
+      "All borrowers must be first-time homebuyers and must live in the home. You must finish homebuyer education. Household income must be within the county limit. The money cannot pay off debt, and you cannot get cash back from the loan.",
+    url: "https://www.calhfa.ca.gov/homebuyer/programs/myhome.htm",
+    targetAudience: "household",
+    amountMinCents: null,
+    amountMaxCents: null,
+    frequency: null,
+    opensAt: null,
+    closesAt: null,
     sourceCheckedAt: null,
   },
 ];

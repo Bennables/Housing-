@@ -29,6 +29,7 @@ export const LISTING_CATEGORIES = [
   "income",
   "development",
   "adu",
+  "homebuying",
   "other",
 ] as const;
 export type ListingCategory = (typeof LISTING_CATEGORIES)[number];
@@ -75,6 +76,7 @@ export const LABELS = {
     income: "Income",
     development: "Development",
     adu: "ADU",
+    homebuying: "Buying a home",
     other: "Other",
   },
   level: {
