@@ -15,8 +15,8 @@ export default async function OnboardingPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">How will you use Closing the Gap?</h1>
         <p className="text-sm text-muted-foreground">
-          This sets which programs and posts we show you first. Households and builders can switch later from their
-          profile.
+          This sets which programs and posts we show you first. Households and builders can switch
+          later from their profile.
         </p>
       </div>
       <OnboardingForm />

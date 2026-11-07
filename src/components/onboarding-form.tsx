@@ -66,7 +66,8 @@ export function OnboardingForm() {
           <span>
             <span className="block font-semibold">I represent an agency</span>
             <span className="block text-sm text-muted-foreground">
-              Government offices, housing authorities and nonprofits that run a program. An admin reviews every agency.
+              Government offices, housing authorities and nonprofits that run a program. An admin
+              reviews every agency.
             </span>
           </span>
         </button>

@@ -64,7 +64,9 @@ describe("post input", () => {
   it("rejects bad amounts", () => {
     const base = { body: "x", sourceUrl: "https://example.gov", benefitFrequency: "monthly" };
     for (const benefitDollars of ["0", "-5", "abc", "1.234"]) {
-      expect(message({ ...base, benefitDollars }), benefitDollars).toMatch(/positive dollar amount/);
+      expect(message({ ...base, benefitDollars }), benefitDollars).toMatch(
+        /positive dollar amount/,
+      );
     }
   });
 
@@ -72,7 +74,9 @@ describe("post input", () => {
     expect(
       message({ body: "x", listingId: LISTING, benefitDollars: "5", benefitFrequency: "monthly" }),
     ).toMatch(/already has its own amount/);
-    expect(message({ body: "x", listingId: LISTING, eligibility: "Anyone" })).toMatch(/already has/);
+    expect(message({ body: "x", listingId: LISTING, eligibility: "Anyone" })).toMatch(
+      /already has/,
+    );
   });
 
   it("limits eligibility to 2000 characters", () => {

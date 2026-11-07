@@ -48,7 +48,11 @@ export default async function AdminPage() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <ActionButton action={verifyAgency.bind(null, a.id)} label="Verify" variant="default" />
+                    <ActionButton
+                      action={verifyAgency.bind(null, a.id)}
+                      label="Verify"
+                      variant="default"
+                    />
                     <ActionButton
                       action={rejectAgency.bind(null, a.id)}
                       label="Reject"
@@ -74,10 +78,11 @@ export default async function AdminPage() {
             {reported.map((r) => (
               <li key={r.postId} className="rounded-xl border bg-card p-4 shadow-xs">
                 <p className="text-sm text-muted-foreground">
-                  By {r.authorName ?? "someone"} · {r.reportCount} {r.reportCount === 1 ? "report" : "reports"} · latest{" "}
+                  By {r.authorName ?? "someone"} · {r.reportCount}{" "}
+                  {r.reportCount === 1 ? "report" : "reports"} · latest{" "}
                   {timeAgo(new Date(r.latestReportAt).toISOString())}
                 </p>
-                <p className="mt-1 line-clamp-4 whitespace-pre-wrap text-sm">{r.body}</p>
+                <p className="mt-1 line-clamp-4 text-sm whitespace-pre-wrap">{r.body}</p>
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {r.reasons.map((reason) => (
                     <li key={reason}>
@@ -91,7 +96,9 @@ export default async function AdminPage() {
                   </Button>
                   {!r.sourceUrl ? null : (
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/admin/listings/new?fromPost=${r.postId}`}>Make it a listing</Link>
+                      <Link href={`/admin/listings/new?fromPost=${r.postId}`}>
+                        Make it a listing
+                      </Link>
                     </Button>
                   )}
                   <ActionButton action={dismissReports.bind(null, r.postId)} label="Keep post" />
@@ -118,21 +125,25 @@ export default async function AdminPage() {
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          To turn a community post about an unlisted opportunity into a listing, open the post and choose &quot;Make it
-          a listing&quot;.
+          To turn a community post about an unlisted opportunity into a listing, open the post and
+          choose &quot;Make it a listing&quot;.
         </p>
         {adminListings.length === 0 ? (
           <EmptyState title="No admin-added listings yet" />
         ) : (
           <ul className="divide-y rounded-xl border bg-card shadow-xs">
             {adminListings.map((l) => (
-              <li key={l.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+              <li
+                key={l.id}
+                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+              >
                 <div className="min-w-0">
                   <Link href={`/listings/${l.slug}`} className="font-medium hover:underline">
                     {l.name}
                   </Link>
                   <p className="text-xs text-muted-foreground">
-                    {LABELS.status[computeStatus(l.opensAt, l.closesAt)]} · {LABELS.audience[l.targetAudience]}
+                    {LABELS.status[computeStatus(l.opensAt, l.closesAt)]} ·{" "}
+                    {LABELS.audience[l.targetAudience]}
                   </p>
                 </div>
                 <Button asChild variant="outline" size="sm">

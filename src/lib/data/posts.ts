@@ -53,7 +53,8 @@ function queryPosts(viewerId: string | null, where: ReturnType<typeof and>, limi
 
 function toPostView(row: PostRow, viewer: Viewer | null): PostView {
   // A post that shares a listing from an agency that is not verified yet shows no embedded card.
-  const listingIsPublic = row.listing && (row.listing.agencyId === null || row.listingAgencyVerified === true);
+  const listingIsPublic =
+    row.listing && (row.listing.agencyId === null || row.listingAgencyVerified === true);
   return {
     id: row.post.id,
     body: row.post.body,
@@ -114,7 +115,10 @@ export async function getFeedPage(args: {
     rows.map((row) => ({ id: row.post.id, createdAt: row.post.createdAt, row })),
     FEED_PAGE_SIZE,
   );
-  return { posts: page.items.map((item) => toPostView(item.row, args.viewer)), nextCursor: page.nextCursor };
+  return {
+    posts: page.items.map((item) => toPostView(item.row, args.viewer)),
+    nextCursor: page.nextCursor,
+  };
 }
 
 export async function getPost(id: string, viewer: Viewer | null): Promise<PostView | null> {
@@ -156,7 +160,11 @@ export async function getComments(postId: string): Promise<CommentView[]> {
 }
 
 /** The most recent posts that share a listing, for the listing's own page. */
-export async function getPostsForListing(listingId: string, viewer: Viewer | null, limit = 5): Promise<PostView[]> {
+export async function getPostsForListing(
+  listingId: string,
+  viewer: Viewer | null,
+  limit = 5,
+): Promise<PostView[]> {
   const rows = await queryPosts(viewer?.id ?? null, eq(posts.listingId, listingId), limit);
   return rows.map((row) => toPostView(row, viewer));
 }

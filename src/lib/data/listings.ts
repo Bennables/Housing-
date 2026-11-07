@@ -60,7 +60,10 @@ export function toListingView(row: ListingRow): ListingView {
  */
 export const isPublicListing = or(isNull(listings.agencyId), eq(agencies.verified, true));
 
-export function audienceCondition(audience: ListingFilters["audience"], column: typeof listings.targetAudience) {
+export function audienceCondition(
+  audience: ListingFilters["audience"],
+  column: typeof listings.targetAudience,
+) {
   if (!audience) return undefined;
   return inArray(column, audience === "both" ? ["both"] : [audience, "both"]);
 }
@@ -85,7 +88,10 @@ export function escapeLike(text: string): string {
   return text.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
 
-export async function getListings(filters: ListingFilters, viewerId: string | null): Promise<ListingView[]> {
+export async function getListings(
+  filters: ListingFilters,
+  viewerId: string | null,
+): Promise<ListingView[]> {
   const status = filters.status ?? "current";
   const rows = await db
     .select(listingSelect(viewerId))
@@ -110,7 +116,10 @@ export async function getListings(filters: ListingFilters, viewerId: string | nu
   return rows.map(toListingView);
 }
 
-export async function getListingBySlug(slug: string, viewerId: string | null): Promise<ListingView | null> {
+export async function getListingBySlug(
+  slug: string,
+  viewerId: string | null,
+): Promise<ListingView | null> {
   const [row] = await db
     .select(listingSelect(viewerId))
     .from(listings)
@@ -120,7 +129,10 @@ export async function getListingBySlug(slug: string, viewerId: string | null): P
   return row ? toListingView(row) : null;
 }
 
-export async function getPublicListingById(id: string, viewerId: string | null): Promise<ListingView | null> {
+export async function getPublicListingById(
+  id: string,
+  viewerId: string | null,
+): Promise<ListingView | null> {
   const [row] = await db
     .select(listingSelect(viewerId))
     .from(listings)

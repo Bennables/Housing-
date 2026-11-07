@@ -8,7 +8,14 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { saveListing } from "@/lib/actions/listings";
-import { AUDIENCES, FREQUENCIES, LABELS, LISTING_CATEGORIES, LISTING_LEVELS, LISTING_TYPES } from "@/lib/constants";
+import {
+  AUDIENCES,
+  FREQUENCIES,
+  LABELS,
+  LISTING_CATEGORIES,
+  LISTING_LEVELS,
+  LISTING_TYPES,
+} from "@/lib/constants";
 import type { ListingFormValues } from "@/lib/listing-form";
 import { US_STATES } from "@/lib/states";
 
@@ -100,7 +107,12 @@ export function ListingForm({
           </NativeSelect>
         </Field>
         <Field id="l-state" label="State" hint="Leave empty for federal listings.">
-          <NativeSelect id="l-state" value={v.state} onChange={set("state")} disabled={v.level === "federal"}>
+          <NativeSelect
+            id="l-state"
+            value={v.state}
+            onChange={set("state")}
+            disabled={v.level === "federal"}
+          >
             <option value="">{v.level === "federal" ? "Not needed" : "Choose…"}</option>
             {US_STATES.map((s) => (
               <option key={s.code} value={s.code}>
@@ -110,7 +122,12 @@ export function ListingForm({
           </NativeSelect>
         </Field>
         <Field id="l-audience" label="Who is it for?">
-          <NativeSelect id="l-audience" value={v.targetAudience} onChange={set("targetAudience")} required>
+          <NativeSelect
+            id="l-audience"
+            value={v.targetAudience}
+            onChange={set("targetAudience")}
+            required
+          >
             <option value="">Choose…</option>
             {AUDIENCES.map((a) => (
               <option key={a} value={a}>
@@ -121,28 +138,71 @@ export function ListingForm({
         </Field>
       </div>
 
-      <Field id="l-summary" label="Summary" hint="Plain English. Say what it is and what it pays for.">
-        <Textarea id="l-summary" value={v.summary} onChange={set("summary")} rows={4} required maxLength={1000} />
+      <Field
+        id="l-summary"
+        label="Summary"
+        hint="Plain English. Say what it is and what it pays for."
+      >
+        <Textarea
+          id="l-summary"
+          value={v.summary}
+          onChange={set("summary")}
+          rows={4}
+          required
+          maxLength={1000}
+        />
       </Field>
 
       <Field id="l-eligibility" label="Who can get it" hint="Plain English, under 2000 characters.">
-        <Textarea id="l-eligibility" value={v.eligibility} onChange={set("eligibility")} rows={4} maxLength={2000} />
+        <Textarea
+          id="l-eligibility"
+          value={v.eligibility}
+          onChange={set("eligibility")}
+          rows={4}
+          maxLength={2000}
+        />
       </Field>
 
-      <Field id="l-url" label="Official link" hint="Every amount, date and rule must come from this page.">
-        <Input id="l-url" type="url" inputMode="url" value={v.url} onChange={set("url")} placeholder="https://" required />
+      <Field
+        id="l-url"
+        label="Official link"
+        hint="Every amount, date and rule must come from this page."
+      >
+        <Input
+          id="l-url"
+          type="url"
+          inputMode="url"
+          value={v.url}
+          onChange={set("url")}
+          placeholder="https://"
+          required
+        />
       </Field>
 
       <fieldset className="space-y-3 rounded-lg border border-dashed p-3">
         <legend className="px-1 text-sm font-medium">Amount (optional)</legend>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field id="l-min" label="Lowest ($)">
-            <Input id="l-min" inputMode="decimal" value={v.amountMinDollars} onChange={set("amountMinDollars")} />
+            <Input
+              id="l-min"
+              inputMode="decimal"
+              value={v.amountMinDollars}
+              onChange={set("amountMinDollars")}
+            />
           </Field>
           <Field id="l-max" label="Highest ($)">
-            <Input id="l-max" inputMode="decimal" value={v.amountMaxDollars} onChange={set("amountMaxDollars")} />
+            <Input
+              id="l-max"
+              inputMode="decimal"
+              value={v.amountMaxDollars}
+              onChange={set("amountMaxDollars")}
+            />
           </Field>
-          <Field id="l-frequency" label="How often paid" hint="Required for grants, benefits and any amount.">
+          <Field
+            id="l-frequency"
+            label="How often paid"
+            hint="Required for grants, benefits and any amount."
+          >
             <NativeSelect id="l-frequency" value={v.frequency} onChange={set("frequency")}>
               <option value="">Choose…</option>
               {FREQUENCIES.map((f) => (
@@ -166,7 +226,12 @@ export function ListingForm({
             <Input id="l-closes" type="date" value={v.closesOn} onChange={set("closesOn")} />
           </Field>
           <Field id="l-checked" label="Last verified on">
-            <Input id="l-checked" type="date" value={v.sourceCheckedOn} onChange={set("sourceCheckedOn")} />
+            <Input
+              id="l-checked"
+              type="date"
+              value={v.sourceCheckedOn}
+              onChange={set("sourceCheckedOn")}
+            />
           </Field>
         </div>
       </fieldset>
@@ -178,7 +243,12 @@ export function ListingForm({
       ) : null}
 
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={() => router.push(redirectTo)} disabled={pending}>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.push(redirectTo)}
+          disabled={pending}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={pending}>

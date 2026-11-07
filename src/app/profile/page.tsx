@@ -45,7 +45,9 @@ export default async function ProfilePage() {
           {agency.verified ? (
             <VerifiedAgencyBadge />
           ) : (
-            <p className="text-sm text-muted-foreground">Waiting for an admin to verify your agency.</p>
+            <p className="text-sm text-muted-foreground">
+              Waiting for an admin to verify your agency.
+            </p>
           )}
           <Button asChild variant="outline">
             <Link href="/agency">Open agency dashboard</Link>

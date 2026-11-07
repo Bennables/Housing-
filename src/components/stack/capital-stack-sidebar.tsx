@@ -30,7 +30,9 @@ export async function CapitalStackSidebar({ userId }: { userId: string }) {
         <div className="mt-4">
           <p className="mb-3 text-sm">
             Add your project to see how much funding you have saved against the cost.
-            {items.length > 0 ? ` You have ${items.length} saved ${items.length === 1 ? "item" : "items"}.` : ""}
+            {items.length > 0
+              ? ` You have ${items.length} saved ${items.length === 1 ? "item" : "items"}.`
+              : ""}
           </p>
           <CapitalStackForm />
         </div>
@@ -56,6 +58,68 @@ function StackBody({
   const bar = stackBarSegments(summary);
   const overfunded = summary.overfundedCents > 0;
 
+  const hasLists =
+    summary.counted.length > 0 || summary.recurring.length > 0 || summary.unknown.length > 0;
+  const lists = (
+    <>
+      {summary.counted.length > 0 ? (
+        <div>
+          <h3 className="text-sm font-semibold">Counted toward the gap</h3>
+          <ul className="mt-1 space-y-1 text-sm">
+            {summary.counted.map((item) => (
+              <li key={`${item.kind}-${item.id}`} className="flex justify-between gap-3">
+                <span className="min-w-0 truncate">{item.title}</span>
+                <span className="shrink-0 text-muted-foreground">
+                  {formatMoney(item.amountCents ?? 0)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {summary.recurring.length > 0 ? (
+        <div>
+          <h3 className="text-sm font-semibold">Recurring support</h3>
+          <p className="text-xs text-muted-foreground">
+            Listed on its own. It is not added to the gap.
+          </p>
+          {summary.recurring.map((group) => (
+            <div key={group.frequency} className="mt-1.5">
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                {LABELS.frequency[group.frequency]}
+              </p>
+              <ul className="space-y-1 text-sm">
+                {group.items.map((item) => (
+                  <li key={`${item.kind}-${item.id}`} className="flex justify-between gap-3">
+                    <span className="min-w-0 truncate">{item.title}</span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {formatMoney(item.amountCents ?? 0)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {summary.unknown.length > 0 ? (
+        <div>
+          <h3 className="text-sm font-semibold">Amount not known</h3>
+          <p className="text-xs text-muted-foreground">Saved, but not counted.</p>
+          <ul className="mt-1 space-y-1 text-sm">
+            {summary.unknown.map((item) => (
+              <li key={`${item.kind}-${item.id}`} className="truncate">
+                {item.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </>
+  );
+
   return (
     <div className="mt-4 space-y-4">
       <p className="font-medium">{stack.projectName}</p>
@@ -64,7 +128,9 @@ function StackBody({
         <div
           role="img"
           aria-label={`Of ${formatMoney(summary.totalCostCents)}: ${formatMoney(summary.firstMortgageCents)} first mortgage, ${formatMoney(summary.oneTimeCents)} saved funding, ${
-            overfunded ? `overfunded by ${formatMoney(summary.overfundedCents)}` : `${formatMoney(summary.remainingGapCents)} still to find`
+            overfunded
+              ? `overfunded by ${formatMoney(summary.overfundedCents)}`
+              : `${formatMoney(summary.remainingGapCents)} still to find`
           }`}
           className="flex h-3 w-full overflow-hidden rounded-full bg-muted"
         >
@@ -91,61 +157,25 @@ function StackBody({
         <Row label="Saved one-time funding" value={formatMoney(summary.oneTimeCents)} />
         <div className="border-t pt-1.5">
           {overfunded ? (
-            <Row label="Potentially overfunded by" value={formatMoney(summary.overfundedCents)} strong />
+            <Row
+              label="Potentially overfunded by"
+              value={formatMoney(summary.overfundedCents)}
+              strong
+            />
           ) : (
             <Row label="Remaining gap" value={formatMoney(summary.remainingGapCents)} strong />
           )}
         </div>
       </dl>
 
-      {summary.counted.length > 0 ? (
-        <div>
-          <h3 className="text-sm font-semibold">Counted toward the gap</h3>
-          <ul className="mt-1 space-y-1 text-sm">
-            {summary.counted.map((item) => (
-              <li key={`${item.kind}-${item.id}`} className="flex justify-between gap-3">
-                <span className="min-w-0 truncate">{item.title}</span>
-                <span className="shrink-0 text-muted-foreground">{formatMoney(item.amountCents ?? 0)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      {summary.recurring.length > 0 ? (
-        <div>
-          <h3 className="text-sm font-semibold">Recurring support</h3>
-          <p className="text-xs text-muted-foreground">Listed on its own. It is not added to the gap.</p>
-          {summary.recurring.map((group) => (
-            <div key={group.frequency} className="mt-1.5">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {LABELS.frequency[group.frequency]}
-              </p>
-              <ul className="space-y-1 text-sm">
-                {group.items.map((item) => (
-                  <li key={`${item.kind}-${item.id}`} className="flex justify-between gap-3">
-                    <span className="min-w-0 truncate">{item.title}</span>
-                    <span className="shrink-0 text-muted-foreground">{formatMoney(item.amountCents ?? 0)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      {summary.unknown.length > 0 ? (
-        <div>
-          <h3 className="text-sm font-semibold">Amount not known</h3>
-          <p className="text-xs text-muted-foreground">Saved, but not counted.</p>
-          <ul className="mt-1 space-y-1 text-sm">
-            {summary.unknown.map((item) => (
-              <li key={`${item.kind}-${item.id}`} className="truncate">
-                {item.title}
-              </li>
-            ))}
-          </ul>
-        </div>
+      {hasLists ? (
+        <>
+          <div className="hidden space-y-4 lg:block">{lists}</div>
+          <details className="rounded-lg border px-3 py-2 lg:hidden">
+            <summary className="cursor-pointer text-sm font-medium">Saved items</summary>
+            <div className="mt-3 space-y-4">{lists}</div>
+          </details>
+        </>
       ) : null}
 
       <details className="rounded-lg border px-3 py-2">

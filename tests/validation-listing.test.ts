@@ -12,7 +12,8 @@ const valid = {
   targetAudience: "household",
   frequency: "monthly",
 };
-const parse = (patch: Record<string, unknown> = {}) => listingInputSchema.safeParse({ ...valid, ...patch });
+const parse = (patch: Record<string, unknown> = {}) =>
+  listingInputSchema.safeParse({ ...valid, ...patch });
 const message = (patch: Record<string, unknown>) => {
   const r = parse(patch);
   return r.success ? null : r.error.issues.map((i) => i.message).join(" | ");
@@ -46,7 +47,9 @@ describe("listing input", () => {
   });
 
   it("rejects a lowest amount above the highest", () => {
-    expect(message({ amountMinDollars: "500", amountMaxDollars: "100" })).toMatch(/cannot be higher/);
+    expect(message({ amountMinDollars: "500", amountMaxDollars: "100" })).toMatch(
+      /cannot be higher/,
+    );
   });
 
   it("requires a state unless the listing is federal, and clears it for federal", () => {

@@ -15,8 +15,8 @@ export default async function AgencyOnboardingPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Request agency verification</h1>
         <p className="text-sm text-muted-foreground">
-          An admin checks every agency before its listings become public. Use your agency&apos;s official website so we
-          can confirm who you are.
+          An admin checks every agency before its listings become public. Use your agency&apos;s
+          official website so we can confirm who you are.
         </p>
       </div>
       <div className="rounded-xl border bg-card p-5 shadow-xs">

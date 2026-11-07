@@ -36,7 +36,12 @@ export function AgencyForm() {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="agency-level">What kind of agency is it?</Label>
-        <NativeSelect id="agency-level" value={level} onChange={(e) => setLevel(e.target.value)} required>
+        <NativeSelect
+          id="agency-level"
+          value={level}
+          onChange={(e) => setLevel(e.target.value)}
+          required
+        >
           <option value="">Choose…</option>
           {AGENCY_LEVELS.map((l) => (
             <option key={l} value={l}>

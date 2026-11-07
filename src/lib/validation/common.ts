@@ -8,7 +8,11 @@ export const emptyToUndefined = (value: unknown) =>
 export const optionalText = (max: number, label: string) =>
   z.preprocess(
     emptyToUndefined,
-    z.string().trim().max(max, `${label} must be under ${max + 1} characters.`).optional(),
+    z
+      .string()
+      .trim()
+      .max(max, `${label} must be under ${max + 1} characters.`)
+      .optional(),
   );
 
 export const requiredText = (min: number, max: number, label: string) =>
@@ -20,7 +24,10 @@ export const requiredText = (min: number, max: number, label: string) =>
 
 export const httpUrl = (label: string) =>
   z
-    .url({ protocol: /^https?$/, error: `${label} must be a full web address that starts with https://` })
+    .url({
+      protocol: /^https?$/,
+      error: `${label} must be a full web address that starts with https://`,
+    })
     .max(2048, `${label} is too long.`);
 
 export const optionalHttpUrl = (label: string) =>

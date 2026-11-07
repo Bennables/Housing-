@@ -23,7 +23,11 @@ export function CapitalStackForm({
     event.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await saveCapitalStack({ projectName, totalCostDollars, firstMortgageDollars });
+      const result = await saveCapitalStack({
+        projectName,
+        totalCostDollars,
+        firstMortgageDollars,
+      });
       if (!result.ok) setError(result.error);
       else router.refresh();
     });
@@ -33,7 +37,12 @@ export function CapitalStackForm({
     <form onSubmit={submit} className="space-y-3">
       <div className="space-y-1.5">
         <Label htmlFor="stack-name">Project name</Label>
-        <Input id="stack-name" value={projectName} onChange={(e) => setProjectName(e.target.value)} required />
+        <Input
+          id="stack-name"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          required
+        />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="stack-total">Total development cost ($)</Label>

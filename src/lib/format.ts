@@ -1,8 +1,12 @@
 export function initials(name: string | null | undefined): string {
-  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  // Only letters and digits count, so "Demo agency (verified)" is "DA", not "D(".
+  const parts = (name ?? "")
+    .split(/\s+/)
+    .map((word) => word.match(/[\p{L}\p{N}]/u)?.[0] ?? "")
+    .filter(Boolean);
   if (parts.length === 0) return "?";
-  const first = parts[0][0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "";
+  const first = parts[0];
+  const last = parts.length > 1 ? parts[parts.length - 1] : "";
   return (first + last).toUpperCase();
 }
 
@@ -28,5 +32,7 @@ export function timeAgo(iso: string, now: Date = new Date()): string {
 }
 
 export function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(iso));
+  return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" }).format(
+    new Date(iso),
+  );
 }

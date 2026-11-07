@@ -27,7 +27,10 @@ export default async function PublicLayout({ children }: { children: React.React
     >
       <main className="min-w-0">{children}</main>
       {sidebar ? (
-        <aside aria-label="Your summary" className="lg:sticky lg:top-20 lg:self-start">
+        <aside
+          aria-label="Your summary"
+          className="order-first lg:sticky lg:top-20 lg:order-none lg:self-start"
+        >
           <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>{sidebar}</Suspense>
         </aside>
       ) : null}

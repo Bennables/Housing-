@@ -11,7 +11,9 @@ import { firstError } from "@/lib/validation/common";
 import { fail, ok, type ActionResult } from "./result";
 
 /** Pick Household or Builder. Also used to switch between the two from the profile page. */
-export async function chooseRole(raw: unknown): Promise<ActionResult<{ role: "household" | "builder" }>> {
+export async function chooseRole(
+  raw: unknown,
+): Promise<ActionResult<{ role: "household" | "builder" }>> {
   const guard = await guardSignedIn();
   if (!guard.ok) return fail(guard.error);
 

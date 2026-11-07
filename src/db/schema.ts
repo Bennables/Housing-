@@ -168,7 +168,10 @@ export const listings = pgTable(
         and (${t.amountMaxCents} is null or ${t.amountMaxCents} > 0)
         and (${t.amountMinCents} is null or ${t.amountMaxCents} is null or ${t.amountMinCents} <= ${t.amountMaxCents})`,
     ),
-    check("listings_dates_ordered", sql`${t.opensAt} is null or ${t.closesAt} is null or ${t.closesAt} >= ${t.opensAt}`),
+    check(
+      "listings_dates_ordered",
+      sql`${t.opensAt} is null or ${t.closesAt} is null or ${t.closesAt} >= ${t.opensAt}`,
+    ),
     check("listings_state_code", sql`${t.state} is null or ${t.state} ~ '^[A-Z]{2}$'`),
     check(
       "listings_eligibility_length",
@@ -208,10 +211,7 @@ export const posts = pgTable(
     index("posts_audience_created_idx").on(t.targetAudience, t.createdAt.desc()),
     index("posts_listing_id_idx").on(t.listingId),
     check("posts_body_length", sql`char_length(${t.body}) between 1 and 3000`),
-    check(
-      "posts_benefit_pair",
-      sql`(${t.benefitCents} is null) = (${t.benefitFrequency} is null)`,
-    ),
+    check("posts_benefit_pair", sql`(${t.benefitCents} is null) = (${t.benefitFrequency} is null)`),
     check("posts_benefit_positive", sql`${t.benefitCents} is null or ${t.benefitCents} > 0`),
     check(
       "posts_eligibility_length",

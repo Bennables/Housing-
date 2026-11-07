@@ -25,7 +25,10 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <div className="space-y-5">
-      <Link href="/feed" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        href="/feed"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="size-4" aria-hidden />
         Back to the feed
       </Link>

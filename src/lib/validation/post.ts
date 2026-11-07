@@ -55,7 +55,8 @@ export const postInputSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["listingId"],
-        message: "A shared listing already has its own amount and eligibility. Remove those fields.",
+        message:
+          "A shared listing already has its own amount and eligibility. Remove those fields.",
       });
     }
   })

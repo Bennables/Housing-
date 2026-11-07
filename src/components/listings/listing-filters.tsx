@@ -2,7 +2,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { FREQUENCIES, LABELS, LISTING_CATEGORIES, LISTING_LEVELS, LISTING_TYPES } from "@/lib/constants";
+import {
+  FREQUENCIES,
+  LABELS,
+  LISTING_CATEGORIES,
+  LISTING_LEVELS,
+  LISTING_TYPES,
+} from "@/lib/constants";
 import { US_STATES } from "@/lib/states";
 import type { ListingFilters } from "@/lib/types";
 
@@ -14,9 +20,20 @@ const STATUS_OPTIONS = [
   { value: "closed", label: "Past (closed)" },
 ] as const;
 
-function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
+function Field({
+  id,
+  label,
+  children,
+  wide = false,
+}: {
+  id: string;
+  label: string;
+  children: React.ReactNode;
+  /** Spans both columns on phones. */
+  wide?: boolean;
+}) {
   return (
-    <div className="space-y-1">
+    <div className={wide ? "col-span-2 space-y-1 lg:col-span-1" : "space-y-1"}>
       <label htmlFor={id} className="block text-xs font-medium text-muted-foreground">
         {label}
       </label>
@@ -36,14 +53,24 @@ export function ListingFiltersForm({
   audience: "builder" | "household";
 }) {
   const hasFilters = Boolean(
-    filters.type || filters.category || filters.level || filters.state || filters.frequency || filters.q ||
-      (filters.status && filters.status !== "current"),
+    filters.type ||
+    filters.category ||
+    filters.level ||
+    filters.state ||
+    filters.frequency ||
+    filters.q ||
+    (filters.status && filters.status !== "current"),
   );
   return (
-    <form method="get" action="/listings" className="rounded-xl border bg-card p-4 shadow-xs" aria-label="Filter listings">
+    <form
+      method="get"
+      action="/listings"
+      className="rounded-xl border bg-card p-4 shadow-xs"
+      aria-label="Filter listings"
+    >
       {showAudience ? <input type="hidden" name="audience" value={audience} /> : null}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Field id="f-q" label="Search by name">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Field id="f-q" label="Search by name" wide>
           <Input id="f-q" name="q" defaultValue={filters.q ?? ""} placeholder="CalFresh, ADU…" />
         </Field>
         <Field id="f-status" label="Status">
@@ -105,13 +132,15 @@ export function ListingFiltersForm({
             ))}
           </NativeSelect>
         </Field>
-        <div className="flex items-end gap-2">
+        <div className="col-span-2 flex items-end gap-2 lg:col-span-1">
           <Button type="submit" size="lg">
             Apply filters
           </Button>
           {hasFilters ? (
             <Button asChild variant="ghost" size="lg">
-              <Link href={showAudience ? `/listings?audience=${audience}` : "/listings"}>Reset</Link>
+              <Link href={showAudience ? `/listings?audience=${audience}` : "/listings"}>
+                Reset
+              </Link>
             </Button>
           ) : null}
         </div>

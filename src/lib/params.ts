@@ -7,6 +7,9 @@ export function first(value: string | string[] | undefined): string | undefined 
   return trimmed ? trimmed : undefined;
 }
 
-export function oneOf<T extends string>(value: string | undefined, allowed: readonly T[]): T | undefined {
+export function oneOf<T extends string>(
+  value: string | undefined,
+  allowed: readonly T[],
+): T | undefined {
   return allowed.find((a) => a === value);
 }

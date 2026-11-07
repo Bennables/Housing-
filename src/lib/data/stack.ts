@@ -62,7 +62,11 @@ export async function getSavedItems(userId: string): Promise<StackItem[]> {
 }
 
 export async function getCapitalStack(userId: string) {
-  const [stack] = await db.select().from(capitalStacks).where(eq(capitalStacks.userId, userId)).limit(1);
+  const [stack] = await db
+    .select()
+    .from(capitalStacks)
+    .where(eq(capitalStacks.userId, userId))
+    .limit(1);
   return stack ?? null;
 }
 

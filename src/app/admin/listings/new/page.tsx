@@ -7,7 +7,11 @@ import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = { title: "New listing" };
 
-export default async function NewAdminListingPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function NewAdminListingPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const fromPost = first((await searchParams).fromPost);
   const viewer = await getViewer();
   // Promoting a community post prefills the form from it. The admin checks every fact against the source.
@@ -18,8 +22,8 @@ export default async function NewAdminListingPage({ searchParams }: { searchPara
       <h1 className="text-2xl font-semibold tracking-tight">New listing</h1>
       {post ? (
         <p className="rounded-lg bg-accent px-3 py-2 text-sm text-accent-foreground">
-          Started from a community post. Check every amount, date and rule against the official source before you
-          publish.
+          Started from a community post. Check every amount, date and rule against the official
+          source before you publish.
         </p>
       ) : null}
       <ListingForm

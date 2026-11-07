@@ -35,10 +35,15 @@ export function PostCard({
   const path = `/posts/${post.id}`;
 
   return (
-    <article aria-label={`Post by ${authorName}`} className="rounded-xl border bg-card p-4 shadow-xs sm:p-5">
+    <article
+      aria-label={`Post by ${authorName}`}
+      className="rounded-xl border bg-card p-4 shadow-xs sm:p-5"
+    >
       <header className="flex items-start gap-3">
         <Avatar size="lg">
-          {post.author.image ? <AvatarImage src={post.author.image} alt="" referrerPolicy="no-referrer" /> : null}
+          {post.author.image ? (
+            <AvatarImage src={post.author.image} alt="" referrerPolicy="no-referrer" />
+          ) : null}
           <AvatarFallback>{initials(post.author.name)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
@@ -58,7 +63,9 @@ export function PostCard({
         </div>
       </header>
 
-      <p className="mt-3 whitespace-pre-wrap break-words text-[0.95rem] leading-relaxed">{post.body}</p>
+      <p className="mt-3 text-[0.95rem] leading-relaxed break-words whitespace-pre-wrap">
+        {post.body}
+      </p>
 
       {post.listing ? (
         <div className="mt-3">
@@ -102,7 +109,12 @@ export function PostCard({
       ) : null}
 
       <footer className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1 border-t pt-2">
-        <LikeButton postId={post.id} liked={post.likedByMe} count={post.likeCount} viewerState={viewerState} />
+        <LikeButton
+          postId={post.id}
+          liked={post.likedByMe}
+          count={post.likeCount}
+          viewerState={viewerState}
+        />
         {detail ? (
           <span className="inline-flex min-h-8 items-center gap-1.5 px-2 text-sm text-muted-foreground">
             <MessageCircle className="size-4" aria-hidden />
@@ -119,10 +131,20 @@ export function PostCard({
             <span className="sr-only"> comments</span>
           </Link>
         )}
-        <SaveButton kind="post" id={post.id} saved={post.savedByMe} viewerState={viewerState} next={path} />
+        <SaveButton
+          kind="post"
+          id={post.id}
+          saved={post.savedByMe}
+          viewerState={viewerState}
+          next={path}
+        />
         {!isOwn ? <ReportButton postId={post.id} viewerState={viewerState} /> : null}
         {post.canDelete ? (
-          <DeletePostButton postId={post.id} onDeleted={onDeleted} redirectTo={detail ? "/feed" : undefined} />
+          <DeletePostButton
+            postId={post.id}
+            onDeleted={onDeleted}
+            redirectTo={detail ? "/feed" : undefined}
+          />
         ) : null}
       </footer>
     </article>

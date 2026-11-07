@@ -41,7 +41,8 @@ export function ReportButton({
     });
   }
 
-  if (done) return <span className="px-2 text-sm text-muted-foreground">Thanks, we will take a look.</span>;
+  if (done)
+    return <span className="px-2 text-sm text-muted-foreground">Thanks, we will take a look.</span>;
 
   if (!open) {
     return (
@@ -74,7 +75,13 @@ export function ReportButton({
       <Button type="button" size="sm" onClick={submit} disabled={pending}>
         {pending ? "Sending…" : "Send report"}
       </Button>
-      <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(false)}
+        disabled={pending}
+      >
         Cancel
       </Button>
       {error ? (

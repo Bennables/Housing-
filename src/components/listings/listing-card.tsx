@@ -42,13 +42,12 @@ export function ListingCard({
   return (
     <article
       aria-label={`Listing: ${listing.name}`}
-      className={cn(
-        "rounded-xl border bg-card p-4",
-        embedded ? "bg-muted/40" : "shadow-xs",
-      )}
+      className={cn("rounded-xl border bg-card p-4", embedded ? "bg-muted/40" : "shadow-xs")}
     >
       <div className="flex flex-wrap items-center gap-1.5">
-        <Badge className={cn("border-transparent", STATUS_STYLE[status])}>{LABELS.status[status]}</Badge>
+        <Badge className={cn("border-transparent", STATUS_STYLE[status])}>
+          {LABELS.status[status]}
+        </Badge>
         <Badge variant="outline">{LABELS.listingType[listing.type]}</Badge>
         <Badge variant="outline">{LABELS.category[listing.category]}</Badge>
         <Badge variant="outline">
@@ -58,7 +57,7 @@ export function ListingCard({
         <Badge variant="outline">For {LABELS.audience[listing.targetAudience].toLowerCase()}</Badge>
       </div>
 
-      <h3 className={cn("mt-3 font-semibold leading-snug", detail ? "text-2xl" : "text-lg")}>
+      <h3 className={cn("mt-3 leading-snug font-semibold", detail ? "text-2xl" : "text-lg")}>
         {detail ? (
           listing.name
         ) : (
@@ -73,7 +72,9 @@ export function ListingCard({
         <VerifiedAgencyBadge label={listing.agencyName ? "Verified agency" : "Verified by admin"} />
       </div>
 
-      <p className={cn("mt-3 text-sm leading-relaxed", !detail && "line-clamp-3")}>{listing.summary}</p>
+      <p className={cn("mt-3 text-sm leading-relaxed", !detail && "line-clamp-3")}>
+        {listing.summary}
+      </p>
 
       {amount ? <p className="mt-3 text-base font-semibold text-primary">{amount}</p> : null}
 
@@ -87,22 +88,32 @@ export function ListingCard({
       {detail && listing.eligibility ? (
         <section className="mt-4">
           <h4 className="text-sm font-semibold">Who can get it</h4>
-          <p className="mt-1 whitespace-pre-line text-sm leading-relaxed">{listing.eligibility}</p>
+          <p className="mt-1 text-sm leading-relaxed whitespace-pre-line">{listing.eligibility}</p>
         </section>
       ) : null}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
         <SourceBadge url={listing.url} />
         {listing.sourceCheckedAt ? (
-          <span className="text-xs text-muted-foreground">Last verified {formatDate(listing.sourceCheckedAt)}</span>
+          <span className="text-xs text-muted-foreground">
+            Last verified {formatDate(listing.sourceCheckedAt)}
+          </span>
         ) : (
-          <span className="text-xs text-muted-foreground">Check the source for the latest details</span>
+          <span className="text-xs text-muted-foreground">
+            Check the source for the latest details
+          </span>
         )}
       </div>
 
       {!embedded ? (
         <div className="mt-3 flex flex-wrap items-center gap-1 border-t pt-3">
-          <SaveButton kind="listing" id={listing.id} saved={listing.savedByMe} viewerState={viewerState} next={href} />
+          <SaveButton
+            kind="listing"
+            id={listing.id}
+            saved={listing.savedByMe}
+            viewerState={viewerState}
+            next={href}
+          />
           <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
             <Link href={`/feed?share=${listing.slug}#composer`}>
               <Share2 aria-hidden />

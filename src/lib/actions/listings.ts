@@ -14,10 +14,21 @@ import { fail, ok, type ActionResult } from "./result";
 /** Who is acting: an admin (any listing, or new admin-owned ones) or a verified agency (its own). */
 async function resolveActor() {
   const admin = await guardAdmin();
-  if (admin.ok) return { ok: true as const, viewer: admin.viewer, agencyId: null as string | null, isAdmin: true };
+  if (admin.ok)
+    return {
+      ok: true as const,
+      viewer: admin.viewer,
+      agencyId: null as string | null,
+      isAdmin: true,
+    };
   const agency = await guardVerifiedAgency();
   if (agency.ok) {
-    return { ok: true as const, viewer: agency.viewer, agencyId: agency.viewer.agencyId, isAdmin: false };
+    return {
+      ok: true as const,
+      viewer: agency.viewer,
+      agencyId: agency.viewer.agencyId,
+      isAdmin: false,
+    };
   }
   // Report the agency problem when there is one, since that is the more useful message.
   return { ok: false as const, error: agency.error };

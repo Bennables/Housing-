@@ -16,7 +16,9 @@ describe("cursor", () => {
     expect(decodeCursor("not base64 json")).toBeNull();
     const bad = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
     expect(decodeCursor(bad({ t: "yesterday", id: id(1) }))).toBeNull();
-    expect(decodeCursor(bad({ t: "2026-03-04T05:06:07.089Z", id: "x'; drop table posts;--" }))).toBeNull();
+    expect(
+      decodeCursor(bad({ t: "2026-03-04T05:06:07.089Z", id: "x'; drop table posts;--" })),
+    ).toBeNull();
     expect(decodeCursor(bad([1, 2]))).toBeNull();
     expect(decodeCursor(bad({ t: 5, id: id(1) }))).toBeNull();
   });

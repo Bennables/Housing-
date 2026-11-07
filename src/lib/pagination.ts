@@ -6,12 +6,14 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Opaque cursor for (createdAt, id). Timestamps are stored with millisecond precision so this is exact. */
 export function encodeCursor(createdAt: Date, id: string): string {
-  return Buffer.from(JSON.stringify({ t: createdAt.toISOString(), id } satisfies FeedCursor)).toString(
-    "base64url",
-  );
+  return Buffer.from(
+    JSON.stringify({ t: createdAt.toISOString(), id } satisfies FeedCursor),
+  ).toString("base64url");
 }
 
-export function decodeCursor(value: string | null | undefined): { createdAt: Date; id: string } | null {
+export function decodeCursor(
+  value: string | null | undefined,
+): { createdAt: Date; id: string } | null {
   if (!value) return null;
   try {
     const parsed: unknown = JSON.parse(Buffer.from(value, "base64url").toString("utf8"));

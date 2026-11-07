@@ -14,7 +14,9 @@ async function HeaderAccount() {
       </Button>
     );
   }
-  return <UserMenu name={viewer.name} image={viewer.image} role={viewer.role} isAdmin={viewer.isAdmin} />;
+  return (
+    <UserMenu name={viewer.name} image={viewer.image} role={viewer.role} isAdmin={viewer.isAdmin} />
+  );
 }
 
 async function HeaderNav() {
@@ -35,7 +37,16 @@ export function SiteHeader() {
         <Link href="/feed" className="shrink-0 text-base font-semibold tracking-tight text-primary">
           Closing the Gap
         </Link>
-        <Suspense fallback={<MainNav links={[{ href: "/feed", label: "Feed" }, { href: "/listings", label: "Listings" }]} />}>
+        <Suspense
+          fallback={
+            <MainNav
+              links={[
+                { href: "/feed", label: "Feed" },
+                { href: "/listings", label: "Listings" },
+              ]}
+            />
+          }
+        >
           <HeaderNav />
         </Suspense>
         <div className="ml-auto">

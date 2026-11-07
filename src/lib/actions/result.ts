@@ -1,6 +1,4 @@
-export type ActionResult<T = undefined> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
 export function ok(): ActionResult<undefined>;
 export function ok<T>(data: T): ActionResult<T>;

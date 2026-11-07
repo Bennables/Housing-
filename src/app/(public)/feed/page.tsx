@@ -38,8 +38,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Community feed</h1>
         <p className="text-sm text-muted-foreground">
-          People sharing programs and funding they found. Posts are from the community, not official. Check every
-          source.
+          People sharing programs and funding they found. Posts are from the community, not
+          official. Check every source.
         </p>
       </div>
 
@@ -53,7 +53,12 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
             <label htmlFor="feed-state" className="block text-xs font-medium text-muted-foreground">
               State
             </label>
-            <NativeSelect id="feed-state" name="state" defaultValue={validState ?? ""} className="w-44">
+            <NativeSelect
+              id="feed-state"
+              name="state"
+              defaultValue={validState ?? ""}
+              className="w-44"
+            >
               <option value="">All states</option>
               {US_STATES.map((s) => (
                 <option key={s.code} value={s.code}>

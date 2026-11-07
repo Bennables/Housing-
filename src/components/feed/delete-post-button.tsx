@@ -47,12 +47,22 @@ export function DeletePostButton({
   }
 
   return (
-    <span className="inline-flex flex-wrap items-center gap-2" role="group" aria-label="Confirm delete">
+    <span
+      className="inline-flex flex-wrap items-center gap-2"
+      role="group"
+      aria-label="Confirm delete"
+    >
       <span className="text-sm text-muted-foreground">Delete this post?</span>
       <Button type="button" variant="destructive" size="sm" onClick={confirm} disabled={pending}>
         {pending ? "Deleting…" : "Yes, delete"}
       </Button>
-      <Button type="button" variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={pending}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setConfirming(false)}
+        disabled={pending}
+      >
         Cancel
       </Button>
       {error ? (

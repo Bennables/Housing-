@@ -43,7 +43,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: Sea
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Listings</h1>
         <p className="text-sm text-muted-foreground">
-          Official programs, grants, loans and bonuses from verified agencies, with a link to the source for each.
+          Official programs, grants, loans and bonuses from verified agencies, with a link to the
+          source for each.
         </p>
       </div>
 

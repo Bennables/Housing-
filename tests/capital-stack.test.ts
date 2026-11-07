@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { stackBarSegments, summarizeStack, type StackItem } from "@/lib/capital-stack";
 
-const item = (id: string, amountCents: number | null, frequency: StackItem["frequency"]): StackItem => ({
+const item = (
+  id: string,
+  amountCents: number | null,
+  frequency: StackItem["frequency"],
+): StackItem => ({
   id,
   kind: "listing",
   title: id,
@@ -24,7 +28,11 @@ describe("summarizeStack", () => {
   it("never adds recurring amounts to the gap or to each other", () => {
     const s = summarizeStack({
       totalCostCents: 100_000_00,
-      items: [item("a", 500_00, "monthly"), item("b", 6_000_00, "yearly"), item("c", 20_00, "weekly")],
+      items: [
+        item("a", 500_00, "monthly"),
+        item("b", 6_000_00, "yearly"),
+        item("c", 20_00, "weekly"),
+      ],
     });
     expect(s.remainingGapCents).toBe(100_000_00);
     expect(s.recurring.map((r) => r.frequency)).toEqual(["weekly", "monthly", "yearly"]);
@@ -34,7 +42,11 @@ describe("summarizeStack", () => {
   it("shows unknown amounts but does not count them", () => {
     const s = summarizeStack({
       totalCostCents: 100_00,
-      items: [item("mystery", null, null), item("half", 5_00, null), item("known", 40_00, "one_time")],
+      items: [
+        item("mystery", null, null),
+        item("half", 5_00, null),
+        item("known", 40_00, "one_time"),
+      ],
     });
     expect(s.unknown.map((i) => i.id)).toEqual(["mystery", "half"]);
     expect(s.remainingGapCents).toBe(60_00);

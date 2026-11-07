@@ -40,7 +40,12 @@ export async function getReportedPosts() {
 }
 
 export async function getAdminListings() {
-  return db.select().from(listings).where(sql`${listings.agencyId} is null`).orderBy(asc(listings.name)).limit(200);
+  return db
+    .select()
+    .from(listings)
+    .where(sql`${listings.agencyId} is null`)
+    .orderBy(asc(listings.name))
+    .limit(200);
 }
 
 export async function getAnyListing(id: string) {

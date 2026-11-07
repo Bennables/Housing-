@@ -12,7 +12,9 @@ import { fail, ok, type ActionResult } from "./result";
 // Saving feeds the builder's Capital Stack and the household estimate, which live in the layout.
 const refreshSidebar = () => revalidatePath("/", "layout");
 
-export async function toggleSaveListing(listingId: string): Promise<ActionResult<{ saved: boolean }>> {
+export async function toggleSaveListing(
+  listingId: string,
+): Promise<ActionResult<{ saved: boolean }>> {
   const guard = await guardOnboarded();
   if (!guard.ok) return fail(guard.error);
   if (!z.uuid().safeParse(listingId).success) return fail("That listing is not available.");
@@ -50,7 +52,11 @@ export async function toggleSavePost(postId: string): Promise<ActionResult<{ sav
 
   let saved = false;
   if (removed.length === 0) {
-    const [post] = await db.select({ id: posts.id }).from(posts).where(eq(posts.id, postId)).limit(1);
+    const [post] = await db
+      .select({ id: posts.id })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
     if (!post) return fail("That post no longer exists.");
     await db.insert(savedPosts).values({ postId, userId: guard.viewer.id }).onConflictDoNothing();
     saved = true;

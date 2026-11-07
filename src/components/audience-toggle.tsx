@@ -22,7 +22,10 @@ export function AudienceToggle({
   };
 
   return (
-    <nav aria-label="Show content for" className="inline-flex rounded-lg border bg-card p-0.5 text-sm">
+    <nav
+      aria-label="Show content for"
+      className="inline-flex rounded-lg border bg-card p-0.5 text-sm"
+    >
       {(["household", "builder"] as const).map((audience) => (
         <Link
           key={audience}
@@ -30,7 +33,9 @@ export function AudienceToggle({
           aria-current={current === audience ? "page" : undefined}
           className={cn(
             "rounded-md px-3 py-1.5 font-medium capitalize transition-colors",
-            current === audience ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+            current === audience
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {audience}

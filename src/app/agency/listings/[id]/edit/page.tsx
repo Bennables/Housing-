@@ -8,7 +8,11 @@ import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Edit listing" };
 
-export default async function EditAgencyListingPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditAgencyListingPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const viewer = await getViewer();
   const agency = viewer ? await getAgencyForUser(viewer.id) : null;
@@ -22,7 +26,11 @@ export default async function EditAgencyListingPage({ params }: { params: Promis
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Edit listing</h1>
-      <ListingForm listingId={listing.id} initial={listingToFormValues(listing)} redirectTo="/agency" />
+      <ListingForm
+        listingId={listing.id}
+        initial={listingToFormValues(listing)}
+        redirectTo="/agency"
+      />
     </>
   );
 }

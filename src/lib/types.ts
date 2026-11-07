@@ -64,7 +64,13 @@ export type CommentView = {
   id: string;
   body: string;
   createdAt: string;
-  author: { id: string; name: string | null; image: string | null; agencyName: string | null; agencyVerified: boolean };
+  author: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    agencyName: string | null;
+    agencyVerified: boolean;
+  };
 };
 
 export type ListingFilters = {
