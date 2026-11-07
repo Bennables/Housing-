@@ -37,7 +37,7 @@ export function PostCard({
   return (
     <article
       aria-label={`Post by ${authorName}`}
-      className="rounded-xl border bg-card p-4 shadow-xs sm:p-5"
+      className="rise lift rounded-2xl border bg-card p-4 sm:p-5"
     >
       <header className="flex items-start gap-3">
         <Avatar size="lg">
@@ -72,7 +72,7 @@ export function PostCard({
           <ListingCard listing={post.listing} viewerState={viewerState} variant="embedded" />
         </div>
       ) : (
-        <div className="mt-3 space-y-2 rounded-lg border bg-muted/40 p-3 text-sm">
+        <div className="mt-3 space-y-2 rounded-xl border bg-muted/40 p-3 text-sm">
           {benefit ? (
             <p>
               <span className="font-semibold">Potential benefit: </span>

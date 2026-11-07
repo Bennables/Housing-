@@ -35,8 +35,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Community feed</h1>
+      <div className="rise space-y-1">
+        <h1 className="text-4xl leading-tight">Community feed</h1>
         <p className="text-sm text-muted-foreground">
           People sharing programs and funding they found. Posts are from the community, not
           official. Check every source.

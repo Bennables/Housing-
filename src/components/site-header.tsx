@@ -1,3 +1,4 @@
+import { Home } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { MainNav } from "@/components/main-nav";
@@ -9,7 +10,7 @@ async function HeaderAccount() {
   const viewer = await getViewer();
   if (!viewer) {
     return (
-      <Button asChild size="sm">
+      <Button asChild variant="outline" size="lg" className="rounded-full px-4">
         <Link href="/signin">Sign in</Link>
       </Button>
     );
@@ -33,9 +34,15 @@ async function HeaderNav() {
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b bg-card/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6">
-        <Link href="/feed" className="shrink-0 text-base font-semibold tracking-tight text-primary">
-          Closing the Gap
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6">
+        <Link href="/feed" className="flex shrink-0 items-center gap-2.5 text-primary">
+          <span
+            aria-hidden
+            className="grid size-8 place-items-center rounded-[10px] bg-primary text-primary-foreground"
+          >
+            <Home className="size-4.5" />
+          </span>
+          <span className="font-heading text-lg tracking-tight">Closing the Gap</span>
         </Link>
         <Suspense
           fallback={

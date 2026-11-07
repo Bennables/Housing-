@@ -16,10 +16,10 @@ export function MainNav({ links }: { links: { href: string; label: string }[] })
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors",
+              "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
               active
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:text-foreground",
+                ? "border-border bg-card font-semibold text-foreground"
+                : "border-transparent text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
             )}
           >
             {link.label}

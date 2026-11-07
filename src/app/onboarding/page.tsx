@@ -13,7 +13,7 @@ export default async function OnboardingPage() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-10">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">How will you use Closing the Gap?</h1>
+        <h1 className="text-4xl leading-tight">How will you use Closing the Gap?</h1>
         <p className="text-sm text-muted-foreground">
           This sets which programs and posts we show you first. Households and builders can switch
           later from their profile.

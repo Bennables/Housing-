@@ -7,9 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-schibsted);
+  --font-mono: var(--font-spline-mono);
+  --font-heading: var(--font-young-serif);
+  --color-blaze: var(--blaze);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,31 +49,33 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Drafting-paper theme: warm paper, ink-green text, one sharp burnt-orange accent. */
 :root {
-  --background: oklch(0.985 0.004 165);
-  --foreground: oklch(0.2 0.02 200);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 200);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 200);
-  --primary: oklch(0.45 0.09 175);
-  --primary-foreground: oklch(0.99 0.005 165);
-  --secondary: oklch(0.96 0.01 165);
-  --secondary-foreground: oklch(0.3 0.04 175);
-  --muted: oklch(0.965 0.006 165);
-  --muted-foreground: oklch(0.48 0.015 190);
-  --accent: oklch(0.94 0.03 170);
-  --accent-foreground: oklch(0.3 0.06 175);
+  --background: oklch(0.955 0.015 95);
+  --foreground: oklch(0.24 0.03 165);
+  --card: oklch(0.985 0.01 95);
+  --card-foreground: oklch(0.24 0.03 165);
+  --popover: oklch(0.985 0.01 95);
+  --popover-foreground: oklch(0.24 0.03 165);
+  --primary: oklch(0.42 0.09 160);
+  --primary-foreground: oklch(0.97 0.012 95);
+  --secondary: oklch(0.93 0.02 100);
+  --secondary-foreground: oklch(0.3 0.05 165);
+  --muted: oklch(0.935 0.016 100);
+  --muted-foreground: oklch(0.47 0.025 160);
+  --accent: oklch(0.92 0.04 140);
+  --accent-foreground: oklch(0.3 0.07 160);
   --destructive: oklch(0.55 0.22 27);
-  --border: oklch(0.91 0.01 170);
-  --input: oklch(0.88 0.012 170);
-  --ring: oklch(0.58 0.1 175);
+  --blaze: oklch(0.5 0.17 40);
+  --border: oklch(0.3 0.03 165 / 0.16);
+  --input: oklch(0.3 0.03 165 / 0.32);
+  --ring: oklch(0.42 0.09 160);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.875rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -99,6 +102,7 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --blaze: oklch(0.72 0.16 45);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -123,8 +127,92 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Faint survey grid with a soft green wash at the top left. */
+    background-image:
+      linear-gradient(oklch(0.3 0.03 165 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.3 0.03 165 / 0.05) 1px, transparent 1px),
+      radial-gradient(900px 420px at 15% -8%, oklch(0.42 0.09 160 / 0.12), transparent 70%);
+    background-size:
+      32px 32px,
+      32px 32px,
+      auto;
+    background-repeat: repeat, repeat, no-repeat;
   }
   html {
     @apply font-sans;
+  }
+  /* Young Serif ships one weight. Stop the browser faking a bold one. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* Cards rise a little on hover. */
+  .lift {
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -16px oklch(0.24 0.03 165 / 0.45);
+  }
+  /* Dark chalkboard panel with a drafting grid. */
+  .bg-chalk {
+    background-color: oklch(0.31 0.06 160);
+    background-image:
+      linear-gradient(oklch(0.96 0.015 95 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.96 0.015 95 / 0.07) 1px, transparent 1px),
+      radial-gradient(700px 380px at 10% 0%, oklch(0.75 0.1 160 / 0.22), transparent 70%);
+    background-size:
+      32px 32px,
+      32px 32px,
+      auto;
+  }
+}
+
+/* One staggered reveal on page load. Set --i on an element to delay it. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes trace {
+  from {
+    stroke-dashoffset: 1200;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.rise {
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+.trace {
+  stroke-dasharray: 1200;
+  animation: trace 2.4s 0.3s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .trace {
+    animation: none;
+  }
+  .lift {
+    transition: none;
+  }
+  .lift:hover {
+    transform: none;
   }
 }
