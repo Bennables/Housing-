@@ -1,8 +1,11 @@
-import type { Frequency } from "./constants";
+import type { Frequency, ListingType } from "./constants";
 
 export type StackItem = {
   id: string;
-  kind: "listing" | "post";
+  /** "source" is something the builder added by hand, like a donor pledge. */
+  kind: "listing" | "post" | "source";
+  /** What kind of funding it is, when known. */
+  sourceType?: ListingType | null;
   title: string;
   /** The "up to" amount in cents, or null when the amount is unknown. */
   amountCents: number | null;
@@ -12,9 +15,11 @@ export type StackItem = {
 export type StackSummary = {
   totalCostCents: number;
   firstMortgageCents: number;
+  /** Ownership projects: affordable price x units. Zero for rental projects. */
+  salesRevenueCents: number;
   /** Saved one-time funding that counts toward closing the gap. */
   oneTimeCents: number;
-  /** total cost - mortgage - saved one-time funding. Negative means overfunded. */
+  /** total cost - mortgage - sales revenue - saved one-time funding. Negative means overfunded. */
   remainingGapCents: number;
   overfundedCents: number;
   /** Recurring amounts are listed by frequency and never added to the gap or to each other. */
@@ -29,10 +34,12 @@ const RECURRING_ORDER: Frequency[] = ["weekly", "monthly", "quarterly", "yearly"
 export function summarizeStack(input: {
   totalCostCents: number;
   firstMortgageCents?: number | null;
+  salesRevenueCents?: number | null;
   items: StackItem[];
 }): StackSummary {
   const totalCostCents = Math.max(0, input.totalCostCents);
   const firstMortgageCents = Math.max(0, input.firstMortgageCents ?? 0);
+  const salesRevenueCents = Math.max(0, input.salesRevenueCents ?? 0);
 
   const counted: StackItem[] = [];
   const unknown: StackItem[] = [];
@@ -52,11 +59,12 @@ export function summarizeStack(input: {
     }
   }
 
-  const remainingGapCents = totalCostCents - firstMortgageCents - oneTimeCents;
+  const remainingGapCents = totalCostCents - firstMortgageCents - salesRevenueCents - oneTimeCents;
 
   return {
     totalCostCents,
     firstMortgageCents,
+    salesRevenueCents,
     oneTimeCents,
     remainingGapCents,
     overfundedCents: Math.max(0, -remainingGapCents),
@@ -73,12 +81,13 @@ export function summarizeStack(input: {
 export function stackBarSegments(summary: StackSummary) {
   const base = Math.max(
     summary.totalCostCents,
-    summary.firstMortgageCents + summary.oneTimeCents,
+    summary.firstMortgageCents + summary.salesRevenueCents + summary.oneTimeCents,
     1,
   );
   const pct = (cents: number) => Math.min(100, Math.max(0, (cents / base) * 100));
   return {
     mortgage: pct(summary.firstMortgageCents),
+    sales: pct(summary.salesRevenueCents),
     saved: pct(summary.oneTimeCents),
     gap: pct(Math.max(0, summary.remainingGapCents)),
   };

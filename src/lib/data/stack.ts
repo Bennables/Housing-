@@ -1,18 +1,27 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { agencies, capitalStacks, listings, posts, savedListings, savedPosts } from "@/db/schema";
+import {
+  agencies,
+  capitalStacks,
+  listings,
+  posts,
+  savedListings,
+  savedPosts,
+  stackSources,
+} from "@/db/schema";
 import type { StackItem } from "@/lib/capital-stack";
 import { potentialCents } from "@/lib/money";
 import { isPublicListing } from "./listings";
 
 /** Everything the user saved, as items with the amount and frequency that apply to each. */
 export async function getSavedItems(userId: string): Promise<StackItem[]> {
-  const [listingRows, postRows] = await Promise.all([
+  const [listingRows, postRows, sourceRows] = await Promise.all([
     db
       .select({
         id: listings.id,
         name: listings.name,
+        type: listings.type,
         min: listings.amountMinCents,
         max: listings.amountMaxCents,
         frequency: listings.frequency,
@@ -29,6 +38,7 @@ export async function getSavedItems(userId: string): Promise<StackItem[]> {
         benefitCents: posts.benefitCents,
         benefitFrequency: posts.benefitFrequency,
         listingName: listings.name,
+        listingType: listings.type,
         min: listings.amountMinCents,
         max: listings.amountMaxCents,
         frequency: listings.frequency,
@@ -37,11 +47,17 @@ export async function getSavedItems(userId: string): Promise<StackItem[]> {
       .innerJoin(posts, eq(posts.id, savedPosts.postId))
       .leftJoin(listings, eq(listings.id, posts.listingId))
       .where(eq(savedPosts.userId, userId)),
+    db
+      .select()
+      .from(stackSources)
+      .where(eq(stackSources.userId, userId))
+      .orderBy(stackSources.createdAt),
   ]);
 
   const items: StackItem[] = listingRows.map((r) => ({
     id: r.id,
     kind: "listing",
+    sourceType: r.type,
     title: r.name,
     amountCents: potentialCents(r.min, r.max),
     frequency: r.frequency,
@@ -53,9 +69,21 @@ export async function getSavedItems(userId: string): Promise<StackItem[]> {
     items.push({
       id: r.id,
       kind: "post",
+      sourceType: fromListing ? r.listingType : null,
       title: fromListing && r.listingName ? r.listingName : truncate(r.body, 70),
       amountCents: fromListing ? potentialCents(r.min, r.max) : r.benefitCents,
       frequency: fromListing ? r.frequency : r.benefitFrequency,
+    });
+  }
+
+  for (const r of sourceRows) {
+    items.push({
+      id: r.id,
+      kind: "source",
+      sourceType: r.sourceType,
+      title: r.name,
+      amountCents: r.amountCents,
+      frequency: r.frequency,
     });
   }
   return items;

@@ -16,6 +16,12 @@ export const LISTING_TYPES = [
   "loan",
   "tax_credit",
   "zoning_bonus",
+  // The rest of the lane's funding sources, beyond government programs.
+  "down_payment",
+  "lender",
+  "employer",
+  "donor",
+  "earned_revenue",
   "other",
 ] as const;
 export type ListingType = (typeof LISTING_TYPES)[number];
@@ -36,6 +42,14 @@ export type ListingCategory = (typeof LISTING_CATEGORIES)[number];
 
 export const LISTING_LEVELS = ["federal", "state", "county", "city"] as const;
 export type ListingLevel = (typeof LISTING_LEVELS)[number];
+
+/** Rental projects repay a first mortgage from rents. Ownership projects sell homes at a price capped by buyer income. */
+export const PROJECT_TYPES = ["rental", "ownership"] as const;
+export type ProjectType = (typeof PROJECT_TYPES)[number];
+
+/** Income bands as a percent of area median income (AMI). */
+export const AMI_PERCENTS = [30, 50, 60, 80, 100, 120] as const;
+export type AmiPercent = (typeof AMI_PERCENTS)[number];
 
 export const AUDIENCES = ["builder", "household", "both"] as const;
 export type Audience = (typeof AUDIENCES)[number];
@@ -65,6 +79,11 @@ export const LABELS = {
     loan: "Loan",
     tax_credit: "Tax credit",
     zoning_bonus: "Zoning bonus",
+    down_payment: "Down payment help",
+    lender: "Lender",
+    employer: "Employer",
+    donor: "Donor",
+    earned_revenue: "Earned revenue",
     other: "Other",
   },
   category: {
@@ -86,6 +105,7 @@ export const LABELS = {
     city: "City",
     nonprofit: "Nonprofit",
   },
+  projectType: { rental: "Rental homes", ownership: "Homes for sale" },
   audience: { builder: "Builders", household: "Households", both: "Everyone" },
   status: { open: "Open", upcoming: "Upcoming", rolling: "Rolling", closed: "Closed" },
   role: {

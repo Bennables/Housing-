@@ -116,7 +116,7 @@ Used by every dollar amount on listings and posts. An amount is meaningless with
 | agencyId | fk agencies, nullable only for admin-seeded listings |
 | createdById | fk users |
 | name | |
-| type | `grant` \| `benefit` \| `loan` \| `tax_credit` \| `zoning_bonus` \| `other` |
+| type | `grant` \| `benefit` \| `loan` \| `tax_credit` \| `zoning_bonus` \| `down_payment` \| `lender` \| `employer` \| `donor` \| `earned_revenue` \| `other` |
 | category | text enum (e.g., food, health, utilities, rent, childcare, development, adu) |
 | level | `federal` \| `state` \| `county` \| `city` |
 | summary | plain English |
@@ -186,7 +186,8 @@ When a post shares a listing, show the **listing's** amount, frequency, and elig
 - **saved_posts:** `userId`, `postId`, composite PK (lets builders save unlisted opportunities into their stack)
 - **comments:** `id`, `postId`, `authorId`, `body`, `createdAt`
 - **likes:** `postId`, `userId`, composite PK
-- **capital_stacks:** `userId` (PK), `projectName`, `totalCostCents`, `firstMortgageCents` (nullable) *(added: the "gap" needs a project cost to measure against)*
+- **capital_stacks:** `userId` (PK), `projectName`, `totalCostCents`, `firstMortgageCents` (nullable, rental only), `projectType` (`rental` | `ownership`). Ownership projects also store the affordability step: `unitCount`, `areaMedianIncomeCents` (yearly, builder-entered from official income limits), `amiPercent` (30/50/60/80/100/120), `housingCostPercent` (30 to 35), `interestRateBps`, `downPaymentBps`, `otherMonthlyCostsCents`. These describe the target buyer band, never a real person's income.
+- **stack_sources:** `id`, `userId`, `sourceType` (same enum as listing type), `name`, `amountCents`, `frequency` (set together or both null). Funding the builder adds by hand that is not a listing: a lender, employer match, donor pledge or earned revenue.
 - **reports:** `id`, `postId`, `reporterId`, `reason`, `createdAt` *(added: lightweight moderation for community-sourced posts)*
 
 ### Indexes
@@ -232,7 +233,10 @@ When a post shares a listing, show the **listing's** amount, frequency, and elig
 ### My Capital Stack (builders)
 - Persistent sidebar on builder pages.
 - Builder enters project name and total development cost (and optionally the first mortgage).
-- Saved listings and posts are listed with their amounts and frequency. Show **remaining gap = total cost − mortgage − saved one-time funding**, as a stacked bar.
+- Saved listings, posts and hand-added sources are listed with their amounts, frequency and funding type.
+- **Rental:** remaining gap = total cost − first mortgage − saved one-time funding.
+- **Homes for sale:** max affordable price = what a household at the chosen AMI band can borrow at 30 to 35% of income (30-year fixed, minus taxes/insurance/HOA, plus down payment). Remaining gap = total cost − (affordable price × homes) − saved one-time funding. Also show the gap per home.
+- Show the gap as a stacked bar.
 - **Never add amounts with different frequencies together.** One-time amounts count toward the gap. Recurring amounts are listed separately as recurring support. Items with unknown amounts are shown but not counted.
 - Label totals as "potential funding". Saving a listing does not mean the builder will get it.
 

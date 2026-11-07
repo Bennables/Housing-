@@ -76,7 +76,7 @@ describe("stackBarSegments", () => {
       items: [item("a", 25_00, "one_time")],
     });
     const bar = stackBarSegments(s);
-    expect(bar).toEqual({ mortgage: 25, saved: 25, gap: 50 });
+    expect(bar).toEqual({ mortgage: 25, sales: 0, saved: 25, gap: 50 });
   });
 
   it("scales to the funding when overfunded", () => {

@@ -21,6 +21,7 @@ import {
   LISTING_CATEGORIES,
   LISTING_LEVELS,
   LISTING_TYPES,
+  PROJECT_TYPES,
   USER_ROLES,
 } from "@/lib/constants";
 
@@ -40,6 +41,7 @@ export const listingTypeEnum = pgEnum("listing_type", LISTING_TYPES);
 export const listingCategoryEnum = pgEnum("listing_category", LISTING_CATEGORIES);
 export const listingLevelEnum = pgEnum("listing_level", LISTING_LEVELS);
 export const audienceEnum = pgEnum("audience", AUDIENCES);
+export const projectTypeEnum = pgEnum("project_type", PROJECT_TYPES);
 
 // ---------------------------------------------------------------------------
 // Auth.js tables (standard @auth/drizzle-adapter shape, plus role and isAdmin on users)
@@ -305,7 +307,18 @@ export const capitalStacks = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     projectName: text("project_name").notNull(),
     totalCostCents: cents("total_cost_cents").notNull(),
+    // Rental projects only. Ownership projects are repaid from home sales instead.
     firstMortgageCents: cents("first_mortgage_cents"),
+    projectType: projectTypeEnum("project_type").notNull().default("rental"),
+    // Ownership only: the affordability step. The builder enters these from official income
+    // limits. They describe the target buyer band, never a real person's income.
+    unitCount: integer("unit_count"),
+    areaMedianIncomeCents: cents("area_median_income_cents"),
+    amiPercent: integer("ami_percent"),
+    housingCostPercent: integer("housing_cost_percent"),
+    interestRateBps: integer("interest_rate_bps"),
+    downPaymentBps: integer("down_payment_bps"),
+    otherMonthlyCostsCents: cents("other_monthly_costs_cents"),
   },
   (t) => [
     check("capital_stacks_total_positive", sql`${t.totalCostCents} > 0`),
@@ -313,6 +326,64 @@ export const capitalStacks = pgTable(
       "capital_stacks_mortgage_positive",
       sql`${t.firstMortgageCents} is null or ${t.firstMortgageCents} > 0`,
     ),
+    check(
+      "capital_stacks_ownership_inputs",
+      sql`${t.projectType} <> 'ownership' or (
+        ${t.unitCount} is not null and ${t.areaMedianIncomeCents} is not null
+        and ${t.amiPercent} is not null and ${t.housingCostPercent} is not null
+        and ${t.interestRateBps} is not null and ${t.downPaymentBps} is not null)`,
+    ),
+    check(
+      "capital_stacks_unit_count",
+      sql`${t.unitCount} is null or ${t.unitCount} between 1 and 10000`,
+    ),
+    check(
+      "capital_stacks_ami_positive",
+      sql`${t.areaMedianIncomeCents} is null or ${t.areaMedianIncomeCents} > 0`,
+    ),
+    check(
+      "capital_stacks_ami_percent",
+      sql`${t.amiPercent} is null or ${t.amiPercent} in (30, 50, 60, 80, 100, 120)`,
+    ),
+    check(
+      "capital_stacks_housing_cost_percent",
+      sql`${t.housingCostPercent} is null or ${t.housingCostPercent} between 30 and 35`,
+    ),
+    check(
+      "capital_stacks_interest_rate",
+      sql`${t.interestRateBps} is null or ${t.interestRateBps} between 0 and 2000`,
+    ),
+    check(
+      "capital_stacks_down_payment",
+      sql`${t.downPaymentBps} is null or ${t.downPaymentBps} between 0 and 5000`,
+    ),
+    check(
+      "capital_stacks_other_monthly",
+      sql`${t.otherMonthlyCostsCents} is null or ${t.otherMonthlyCostsCents} >= 0`,
+    ),
+  ],
+);
+
+// Sources a builder adds to their own stack that are not listings: an employer match, a donor
+// pledge, a lender's commitment, resale revenue.
+export const stackSources = pgTable(
+  "stack_sources",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    sourceType: listingTypeEnum("source_type").notNull(),
+    name: text("name").notNull(),
+    amountCents: cents("amount_cents"),
+    frequency: frequencyEnum("frequency"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("stack_sources_user_idx").on(t.userId),
+    check("stack_sources_name_length", sql`char_length(${t.name}) between 1 and 120`),
+    check("stack_sources_amount_positive", sql`${t.amountCents} is null or ${t.amountCents} > 0`),
+    check("stack_sources_amount_pair", sql`(${t.amountCents} is null) = (${t.frequency} is null)`),
   ],
 );
 
@@ -380,6 +451,7 @@ export const notifications = pgTable(
 );
 
 export type User = typeof users.$inferSelect;
+export type CapitalStack = typeof capitalStacks.$inferSelect;
 export type Agency = typeof agencies.$inferSelect;
 export type Listing = typeof listings.$inferSelect;
 export type NewListing = typeof listings.$inferInsert;
