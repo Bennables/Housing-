@@ -34,7 +34,7 @@ function wrap(bodyHtml: string, footerHtml: string): string {
   return `<!doctype html>
 <html lang="en"><body style="margin:0;padding:24px;background:#f6f8f7;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#10231c;">
 <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #dfe6e2;border-radius:12px;padding:24px;">
-<p style="margin:0 0 16px;font-size:14px;font-weight:600;color:#0b6b4f;">Closing the Gap</p>
+<p style="margin:0 0 16px;font-size:14px;font-weight:600;color:#0b6b4f;">Gapless</p>
 ${bodyHtml}
 <p style="margin:24px 0 0;font-size:13px;color:#5b6b64;">${escapeHtml(DISCLAIMER)}</p>
 </div>
@@ -43,12 +43,12 @@ ${bodyHtml}
 }
 
 function footerText(baseUrl: string): string {
-  return `You get this email because you turned on email alerts at Closing the Gap.\nTo stop, turn them off here: ${baseUrl}/profile#email-alerts`;
+  return `You get this email because you turned on email alerts at Gapless.\nTo stop, turn them off here: ${baseUrl}/profile#email-alerts`;
 }
 
 function footerHtml(baseUrl: string): string {
   const link = escapeHtml(`${baseUrl}/profile#email-alerts`);
-  return `You get this email because you turned on email alerts at Closing the Gap. <a href="${link}" style="color:#5b6b64;">Turn them off</a>.`;
+  return `You get this email because you turned on email alerts at Gapless. <a href="${link}" style="color:#5b6b64;">Turn them off</a>.`;
 }
 
 /** The email sent when a new official listing matches someone. */

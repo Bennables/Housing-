@@ -19,7 +19,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Searc
         className="bg-chalk flex flex-col justify-between gap-10 px-8 py-10 text-[oklch(0.96_0.015_95)] sm:px-12"
       >
         <p className="font-mono text-xs tracking-[0.14em] text-[oklch(0.82_0.04_160)] uppercase">
-          Closing the Gap
+          Gapless
         </p>
         <div className="rise max-w-md space-y-4">
           <h1 className="text-5xl leading-[1.05]">Find funding for housing.</h1>

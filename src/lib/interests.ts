@@ -72,7 +72,7 @@ const SMS_MAX = 300;
  */
 export function buildSmsText(args: { postUrl: string; listingName: string | null }): string {
   const about = args.listingName ? ` about ${args.listingName}` : "";
-  const head = "Closing the Gap: A community post";
+  const head = "Gapless: A community post";
   const tail = ` may interest you. It is not an official notice, so check the source. ${args.postUrl} Reply STOP to opt out.`;
   const room = SMS_MAX - head.length - tail.length;
   const trimmedAbout = about.length > room ? `${about.slice(0, Math.max(0, room - 1))}…` : about;

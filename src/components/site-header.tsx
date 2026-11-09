@@ -53,7 +53,7 @@ export function SiteHeader() {
           >
             <Home className="size-4.5" />
           </span>
-          <span className="font-heading text-lg tracking-tight">Closing the Gap</span>
+          <span className="font-heading text-lg tracking-tight">Gapless</span>
         </Link>
         <Suspense
           fallback={

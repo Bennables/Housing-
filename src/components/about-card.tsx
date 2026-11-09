@@ -4,7 +4,7 @@ import Link from "next/link";
 export function AboutCard() {
   return (
     <section aria-label="About" className="space-y-2 rounded-xl border bg-card p-4">
-      <h2 className="font-semibold">About Closing the Gap</h2>
+      <h2 className="font-semibold">About Gapless</h2>
       <p className="text-sm text-muted-foreground">
         One place to find government programs and funding. Households find help with food, health,
         utilities and rent. Builders find grants, loans and bonuses.

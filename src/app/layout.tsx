@@ -13,7 +13,7 @@ const youngSerif = Young_Serif({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Closing the Gap", template: "%s | Closing the Gap" },
+  title: { default: "Gapless", template: "%s | Gapless" },
   description:
     "Find government programs and funding, from SNAP and Medi-Cal to grants for builders, and see how the money closes the housing gap.",
 };
