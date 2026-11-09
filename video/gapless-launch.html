@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Gapless Launch Film</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&family=Young+Serif&display=block"
+  rel="stylesheet"
+/>
+<style>
+  /* Tokens copied from src/app/globals.css so the film matches the app. */
+  :root {
+    --background: oklch(0.955 0.015 95);
+    --foreground: oklch(0.24 0.03 165);
+    --card: oklch(0.985 0.01 95);
+    --primary: oklch(0.42 0.09 160);
+    --primary-foreground: oklch(0.97 0.012 95);
+    --secondary: oklch(0.93 0.02 100);
+    --secondary-foreground: oklch(0.3 0.05 165);
+    --muted: oklch(0.935 0.016 100);
+    --muted-foreground: oklch(0.47 0.025 160);
+    --accent: oklch(0.92 0.04 140);
+    --accent-foreground: oklch(0.3 0.07 160);
+    --blaze: oklch(0.5 0.17 40);
+    --border: oklch(0.3 0.03 165 / 0.16);
+    --chalk: oklch(0.31 0.06 160);
+    --cream: oklch(0.96 0.015 95);
+    --serif: "Young Serif", Georgia, serif;
+    --sans: "Schibsted Grotesk", system-ui, sans-serif;
+    --mono: "Spline Sans Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: #111; overflow: hidden; }
+  body { display: grid; place-items: center; font-family: var(--sans); color: var(--foreground); -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 400; font-synthesis: none; letter-spacing: -0.01em; }
+
+  #stage {
+    position: relative; width: 1920px; height: 1080px; overflow: hidden; flex: none;
+    background-color: var(--background);
+    background-image:
+      linear-gradient(oklch(0.3 0.03 165 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.3 0.03 165 / 0.05) 1px, transparent 1px),
+      radial-gradient(1400px 700px at 20% -10%, oklch(0.42 0.09 160 / 0.14), transparent 70%);
+    background-size: 32px 32px, 32px 32px, auto;
+    transform-origin: center;
+  }
+  .layer { position: absolute; inset: 0; will-change: transform, opacity, filter; }
+  .center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .t { opacity: 0; will-change: transform, opacity, filter; }
+
+  /* ---------- Scene A: the gap ---------- */
+  .hook { font-family: var(--serif); font-size: 112px; line-height: 1.04; letter-spacing: -0.02em; }
+  .hook .blaze { color: var(--blaze); }
+  .gapbar { margin-top: 72px; width: 1100px; height: 76px; display: flex; gap: 6px; }
+  .gapbar .seg { border-radius: 16px; display: flex; align-items: center; padding: 0 24px; font-size: 24px; font-weight: 500; white-space: nowrap; overflow: hidden; }
+  #segRent { background: var(--foreground); color: var(--cream); width: 0; }
+  #segGap { flex: 1; border: 2.5px dashed var(--blaze); background: oklch(0.5 0.17 40 / 0.12); color: var(--blaze); justify-content: center; }
+
+  /* ---------- Scene B / E: logo ---------- */
+  .mark { display: grid; place-items: center; border-radius: 28%; background: var(--primary); color: var(--primary-foreground); }
+  .wordmark { font-family: var(--serif); color: var(--primary); letter-spacing: -0.025em; }
+  .tagline { font-size: 40px; color: var(--muted-foreground); }
+
+  /* ---------- Captions ---------- */
+  .caption { position: absolute; left: 0; right: 0; top: 64px; z-index: 10; text-align: center; font-family: var(--serif); font-size: 66px; letter-spacing: -0.015em; opacity: 0; }
+  .caption.low { top: auto; bottom: 54px; font-size: 50px; }
+  .caption.low span { display: inline-block; padding: 14px 36px 20px; border-radius: 999px; background: oklch(0.985 0.01 95 / 0.86); backdrop-filter: blur(18px); box-shadow: 0 0 0 1px var(--border), 0 24px 60px -20px oklch(0.24 0.03 165 / 0.5); }
+
+  /* ---------- Browser window ---------- */
+  #cam { position: absolute; left: 0; top: 0; z-index: 1; transform-origin: 0 0; will-change: transform; }
+  #win {
+    position: relative; width: 1600px; height: 1010px; border-radius: 22px; overflow: hidden;
+    background: var(--background);
+    background-image:
+      linear-gradient(oklch(0.3 0.03 165 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.3 0.03 165 / 0.05) 1px, transparent 1px),
+      radial-gradient(900px 420px at 15% -8%, oklch(0.42 0.09 160 / 0.12), transparent 70%);
+    background-size: 32px 32px, 32px 32px, auto;
+    box-shadow: 0 0 0 1px oklch(0.24 0.03 165 / 0.12), 0 50px 120px -30px oklch(0.24 0.03 165 / 0.45), 0 20px 40px -20px oklch(0.24 0.03 165 / 0.3);
+  }
+  .chrome { height: 46px; background: oklch(0.93 0.012 95); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 8px; }
+  .dot { width: 13px; height: 13px; border-radius: 50%; }
+  .url { margin: 0 auto; width: 460px; height: 30px; border-radius: 9px; background: oklch(0.97 0.008 95); display: grid; place-items: center; font-size: 14px; color: var(--muted-foreground); }
+
+  .hdr { height: 64px; border-bottom: 1px solid var(--border); background: oklch(0.985 0.01 95 / 0.9); display: flex; align-items: center; gap: 28px; padding: 0 40px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--primary); font-family: var(--serif); font-size: 19px; }
+  .brand .mark { width: 32px; height: 32px; border-radius: 10px; }
+  .nav { display: flex; gap: 4px; }
+  .nav span { padding: 7px 14px; border-radius: 999px; font-size: 15px; font-weight: 500; color: var(--muted-foreground); }
+  .nav span.on { background: var(--accent); color: var(--accent-foreground); }
+  .avatar { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--secondary); color: var(--secondary-foreground); display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+
+  #app { position: relative; }
+  .main { position: relative; display: grid; grid-template-columns: 1fr 380px; gap: 32px; padding: 32px 40px; }
+  .col { position: relative; }
+  .page { position: absolute; left: 0; top: 0; width: 100%; }
+  .page-title { font-size: 40px; }
+  .sub { margin-top: 4px; font-size: 16px; color: var(--muted-foreground); }
+
+  .filters { display: flex; gap: 10px; margin-top: 18px; position: relative; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border: 1px solid oklch(0.3 0.03 165 / 0.32); border-radius: 10px; background: var(--card); font-size: 15px; }
+  .pill b { font-weight: 600; }
+  .pill svg { width: 16px; height: 16px; color: var(--muted-foreground); }
+  #menu { position: absolute; top: 46px; left: 118px; width: 230px; padding: 6px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); box-shadow: 0 24px 50px -18px oklch(0.24 0.03 165 / 0.4); opacity: 0; transform-origin: top left; z-index: 5; }
+  #menu div { padding: 9px 12px; border-radius: 8px; font-size: 15px; }
+  #menu div.hi { background: var(--accent); color: var(--accent-foreground); font-weight: 600; }
+
+  .grid { position: relative; margin-top: 22px; height: 760px; }
+  .set { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-content: start; align-items: start; }
+
+  .card { position: relative; border: 1px solid var(--border); border-radius: 24px; background: var(--card); padding: 20px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .badge { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 8px; border: 1px solid var(--border); font-size: 12.5px; font-weight: 500; white-space: nowrap; }
+  .card h3 { margin-top: 12px; font-size: 21px; line-height: 1.3; }
+  .agency { margin-top: 6px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted-foreground); }
+  .vbadge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--accent); color: var(--accent-foreground); font-size: 12px; font-weight: 500; }
+  .vbadge svg { width: 14px; height: 14px; }
+  .summary { margin-top: 12px; font-size: 14.5px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .amount { margin-top: 12px; display: inline-block; border: 1px dashed oklch(0.24 0.03 165 / 0.3); background: var(--background); border-radius: 12px; padding: 8px 12px; }
+  .amount .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.15em; color: var(--muted-foreground); text-transform: uppercase; }
+  .amount .v { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+  .srcrow { margin-top: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .src { position: relative; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 7px; background: var(--card); padding: 2px 8px; font-size: 12.5px; font-weight: 500; }
+  .src svg { width: 12px; height: 12px; }
+  .muted { font-size: 12.5px; color: var(--muted-foreground); }
+  .actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 4px; }
+  .btn { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--muted-foreground); }
+  .btn svg { width: 16px; height: 16px; }
+  .btn.details { margin-left: auto; color: var(--foreground); }
+  #saveBtn .on { position: absolute; inset: 0; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 10px; color: var(--primary); background: var(--accent); opacity: 0; }
+  #saveBtn .on svg { fill: currentColor; }
+  .ring { position: absolute; inset: -6px; border-radius: 12px; border: 3px solid var(--blaze); opacity: 0; pointer-events: none; }
+
+  /* Sidebar */
+  .side { border: 1px solid var(--border); border-radius: 24px; background: var(--card); padding: 22px; align-self: start; }
+  .side h2 { font-size: 24px; }
+  .side .note { margin-top: 2px; font-size: 12.5px; color: var(--muted-foreground); line-height: 1.45; }
+  .proj { margin-top: 16px; font-weight: 500; font-size: 16px; }
+  .bar { margin-top: 12px; height: 18px; display: flex; gap: 2px; border-radius: 9px; overflow: hidden; background: oklch(0.5 0.17 40 / 0.2); }
+  .bar div { height: 100%; }
+  .legend { margin-top: 10px; display: flex; gap: 14px; font-size: 12.5px; color: var(--muted-foreground); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  dl { margin-top: 16px; display: grid; gap: 8px; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 14.5px; }
+  .row dt { color: var(--muted-foreground); }
+  .row dd { font-family: var(--mono); font-weight: 500; }
+  .row.gap { border-top: 1px solid var(--border); padding-top: 8px; }
+  .row.gap dd { font-weight: 600; color: var(--blaze); }
+  .counted { margin-top: 18px; }
+  .counted h4 { font-size: 14.5px; font-weight: 600; }
+  .counted li { list-style: none; margin-top: 6px; display: flex; justify-content: space-between; font-size: 14.5px; }
+  .counted li span:last-child { color: var(--muted-foreground); }
+  .unknown { margin-top: 14px; font-size: 13px; color: var(--muted-foreground); }
+
+  #flychip { position: absolute; left: 0; top: 0; padding: 8px 14px; border-radius: 999px; background: var(--primary); color: var(--primary-foreground); font-family: var(--mono); font-weight: 600; font-size: 16px; opacity: 0; z-index: 20; white-space: nowrap; box-shadow: 0 14px 30px -10px oklch(0.24 0.03 165 / 0.6); }
+
+  /* Feed page */
+  .composer { margin-top: 20px; border: 1px solid var(--border); border-radius: 24px; background: var(--card); padding: 18px 20px; }
+  .composer .top { display: flex; gap: 12px; }
+  .composer .ta { flex: 1; min-height: 84px; border: 1px solid oklch(0.3 0.03 165 / 0.32); border-radius: 12px; padding: 12px 14px; font-size: 16px; line-height: 1.5; }
+  .caret { display: inline-block; width: 2px; height: 20px; background: var(--foreground); vertical-align: -4px; margin-left: 1px; }
+  .attached { margin-top: 12px; margin-left: 46px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: var(--muted); font-size: 13.5px; }
+  .composer .bottom { display: flex; align-items: center; margin-top: 12px; }
+  .postbtn { position: relative; margin-left: auto; height: 38px; padding: 0 20px; border-radius: 999px; background: var(--primary); color: var(--primary-foreground); display: grid; place-items: center; font-weight: 500; font-size: 15px; }
+  .av { width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--secondary); color: var(--secondary-foreground); display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+  .av.lg { width: 42px; height: 42px; font-size: 14px; }
+  .post { margin-top: 20px; border: 1px solid var(--border); border-radius: 24px; background: var(--card); padding: 20px; opacity: 0; }
+  .post .who { display: flex; gap: 12px; align-items: flex-start; }
+  .clabel { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; border: 1px dashed oklch(0.3 0.03 165 / 0.3); font-size: 12px; font-weight: 500; color: var(--muted-foreground); }
+  .post .body { margin-top: 12px; font-size: 15.5px; line-height: 1.6; }
+  .embed { margin-top: 12px; border: 1px solid var(--border); border-radius: 18px; background: oklch(0.935 0.016 100 / 0.5); padding: 16px 18px; }
+  .embed h3 { margin-top: 10px; font-size: 19px; }
+  .pfoot { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; gap: 4px; }
+  #likeBtn .fill { fill: transparent; }
+
+  /* Cursor */
+  #cursor { position: absolute; left: 0; top: 0; width: 34px; height: 34px; z-index: 50; opacity: 0; transform-origin: 4px 3px; filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.3)); }
+  #clickring { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: oklch(0.42 0.09 160 / 0.28); border: 2px solid oklch(0.42 0.09 160 / 0.6); z-index: 49; opacity: 0; }
+
+  /* Scene D: households */
+  #chalk {
+    background-color: var(--chalk);
+    background-image:
+      linear-gradient(oklch(0.96 0.015 95 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.96 0.015 95 / 0.07) 1px, transparent 1px),
+      radial-gradient(1200px 600px at 10% 0%, oklch(0.75 0.1 160 / 0.22), transparent 70%);
+    background-size: 32px 32px, 32px 32px, auto;
+    opacity: 0;
+  }
+  .htitle { position: absolute; left: 0; right: 0; top: 150px; text-align: center; font-family: var(--serif); font-size: 104px; color: var(--cream); letter-spacing: -0.02em; }
+  .hsub { position: absolute; left: 0; right: 0; top: 296px; text-align: center; font-size: 34px; color: oklch(0.88 0.03 160); }
+  .hcards { position: absolute; left: 0; right: 0; top: 440px; display: flex; justify-content: center; gap: 28px; perspective: 1400px; }
+  .hcards .card { width: 382px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.55); }
+  .hcards .summary { -webkit-line-clamp: 4; }
+
+  /* Scene E */
+  .fine { font-size: 22px; color: var(--muted-foreground); }
+
+  #hud { position: fixed; left: 12px; bottom: 10px; font: 12px var(--mono); color: #aaa; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ================= Scene A: the problem ================= -->
+  <div id="sceneA" class="layer center">
+    <div class="hook">
+      <div id="a1" class="t">Affordable housing</div>
+      <div id="a2" class="t">has a funding <span class="blaze">gap.</span></div>
+    </div>
+    <div id="abar" class="gapbar t">
+      <div id="segRent" class="seg">What capped rents can repay</div>
+      <div id="segGap" class="seg">The gap</div>
+    </div>
+  </div>
+
+  <!-- ================= Scene B: logo, sketched in pencil ================= -->
+  <div id="sceneB" class="layer center">
+    <svg id="sketch" viewBox="0 0 360 230" width="600" height="383" overflow="visible" fill="none"
+      stroke="var(--primary)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-top:-90px">
+      <path class="sk" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" d="M20 190H340" />
+      <path class="sk" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" d="M70 190V100H290V190" />
+      <path class="sk" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" d="M52 102L180 38L308 102" />
+      <path class="sk" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" d="M165 190V138H195V190" />
+      <path class="sk" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" d="M92 122H140V158H92Z" />
+      <path class="sk" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" d="M220 122H268V158H220Z" />
+      <g id="pencil" opacity="0" stroke-width="0.8" stroke="oklch(0.25 0.02 160)">
+        <rect x="16" y="-5" width="48" height="10" fill="oklch(0.82 0.14 85)" />
+        <path d="M16 0H64" opacity=".35" />
+        <rect x="64" y="-5" width="7" height="10" fill="oklch(0.78 0.02 250)" />
+        <rect x="71" y="-5" width="9" height="10" rx="2.5" fill="oklch(0.72 0.12 15)" />
+        <path d="M0 0L16 -5V5Z" fill="oklch(0.88 0.05 75)" />
+        <path d="M0 0L5 -1.6V1.6Z" fill="oklch(0.3 0.01 250)" />
+      </g>
+    </svg>
+    <div id="bWord" class="wordmark t" style="font-size:150px; margin-top:6px">Gapless</div>
+    <div id="bTag" class="tagline t" style="margin-top:8px">Find the money that closes it.</div>
+  </div>
+
+  <!-- ================= Scene C: the product ================= -->
+  <div id="sceneC" class="layer">
+    <div id="cap1" class="caption">Official programs, in one place.</div>
+    <div id="cap2" class="caption low"><span>Every listing links to its source.</span></div>
+    <div id="cap3" class="caption low"><span>Save funding. Watch the gap close.</span></div>
+    <div id="cap4" class="caption">Share what you find.</div>
+
+    <div id="cam">
+      <div id="win">
+        <div class="chrome">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <div class="url" id="urlText">Listings | Gapless</div>
+        </div>
+        <div id="app">
+          <div class="hdr">
+            <div class="brand"><span class="mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>Gapless</div>
+            <div class="nav"><span id="navFeed">Feed</span><span id="navList" class="on">Listings</span></div>
+            <div class="avatar">DB</div>
+          </div>
+
+          <div class="main">
+            <div class="col">
+              <!-- Listings page -->
+              <div id="pageList" class="page">
+                <h1 class="page-title">Listings</h1>
+                <p class="sub">Official programs from government offices and nonprofits.</p>
+                <div class="filters">
+                  <div class="pill">Type <b>Any</b> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></div>
+                  <div class="pill" id="catPill">Category <b id="catVal">Any</b> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></div>
+                  <div class="pill">Level <b>Any</b> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></div>
+                  <div class="pill">State <b>California</b> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></div>
+                  <div id="menu">
+                    <div>Any</div><div>Development</div><div id="optAdu">ADU</div><div>Rent</div><div>Buying a home</div>
+                  </div>
+                </div>
+
+                <div class="grid">
+                  <div id="setA" class="set"></div>
+                  <div id="setB" class="set"></div>
+                </div>
+              </div>
+
+              <!-- Feed page -->
+              <div id="pageFeed" class="page" style="opacity:0">
+                <h1 class="page-title">Feed</h1>
+                <p class="sub">What people are sharing about programs and funding.</p>
+                <div class="composer">
+                  <div class="top">
+                    <div class="av">DB</div>
+                    <div class="ta"><span id="typed"></span><span id="caret" class="caret"></span></div>
+                  </div>
+                  <div class="attached">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
+                    Attached: <b style="font-weight:600">CalHFA ADU Grant Program</b>
+                  </div>
+                  <div class="bottom">
+                    <span class="muted">Posts are community content. Add a source link.</span>
+                    <div class="postbtn" id="postBtn">Post</div>
+                  </div>
+                </div>
+
+                <article class="post" id="post">
+                  <div class="who">
+                    <div class="av lg">DB</div>
+                    <div>
+                      <div style="display:flex;gap:8px;align-items:center"><span style="font-weight:500">Demo builder</span><span class="clabel">Community post</span></div>
+                      <div class="muted" style="font-size:14px;margin-top:2px">Just now</div>
+                    </div>
+                  </div>
+                  <p class="body" id="postBody"></p>
+                  <div class="embed">
+                    <div class="badges"><span class="badge">Grant</span><span class="badge">ADU</span><span class="badge">State · California</span><span class="badge">For builders</span></div>
+                    <h3>CalHFA ADU Grant Program</h3>
+                    <div class="agency">calhfa.ca.gov <span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>Verified by admin</span></div>
+                    <div class="amount"><div class="k">Amount</div><div class="v">Up to $40,000 one-time</div></div>
+                  </div>
+                  <div class="pfoot">
+                    <span class="btn" id="likeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="fill" d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg><span id="likeCount">Like</span></span>
+                    <span class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>Comment</span>
+                    <span class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>Save</span>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <!-- My Capital Stack -->
+            <aside class="side" id="side">
+              <h2>My Capital Stack</h2>
+              <p class="note">Potential funding only. Saving a listing does not mean you will get it.</p>
+              <p class="proj">Backyard ADU</p>
+              <div class="bar">
+                <div style="background:var(--foreground); width:66.6667%"></div>
+                <div id="barSaved" style="background:var(--primary); width:0%"></div>
+                <div id="barGap" style="background:oklch(0.5 0.17 40 / 0.2); flex:1"></div>
+              </div>
+              <div class="legend">
+                <span><i style="background:var(--foreground)"></i>Mortgage</span>
+                <span><i style="background:var(--primary)"></i>Saved funding</span>
+                <span><i style="background:oklch(0.5 0.17 40 / 0.2); border:1px solid oklch(0.5 0.17 40 / 0.5)"></i>Gap</span>
+              </div>
+              <dl>
+                <div class="row"><dt>Total cost</dt><dd>$180,000</dd></div>
+                <div class="row"><dt>First mortgage</dt><dd>$120,000</dd></div>
+                <div class="row"><dt>Saved one-time funding</dt><dd id="savedVal">$0</dd></div>
+                <div class="row gap" id="gapRow"><dt>Remaining gap</dt><dd id="gapVal">$60,000</dd></div>
+              </dl>
+              <div class="counted" id="counted" style="opacity:0">
+                <h4>Counted toward the gap</h4>
+                <ul><li><span>CalHFA ADU Grant Program</span><span>$40,000</span></li></ul>
+              </div>
+              <p class="unknown">Demo project. Amounts are program maximums.</p>
+            </aside>
+          </div>
+
+          <div id="flychip">+$40,000</div>
+          <div id="clickring"></div>
+          <svg id="cursor" viewBox="0 0 28 28"><path d="M5 3.2v19.6l5.1-4.9 3.2 7.3 3.4-1.5-3.2-7.1h7.1z" fill="#111" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Scene D: households ================= -->
+  <div id="chalk" class="layer"></div>
+  <div id="sceneD" class="layer">
+    <div id="dTitle" class="htitle t">For households, too.</div>
+    <div id="dSub" class="hsub t">Food, health care, energy bills and tax credits. Money saved there can go to rent.</div>
+    <div class="hcards" id="hcards"></div>
+  </div>
+
+  <!-- ================= Scene E: end card ================= -->
+  <div id="sceneE" class="layer center">
+    <div id="eMark" class="mark t" style="width:150px;height:150px">
+      <svg width="78" height="78" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    </div>
+    <div id="eWord" class="wordmark t" style="font-size:170px; margin-top:28px; line-height:1">Gapless</div>
+    <div id="eTag" class="t" style="font-family:var(--serif); font-size:52px; margin-top:26px">Close the gap.</div>
+    <div id="eFine" class="fine t" style="position:absolute; bottom:64px">Information may change. Always confirm eligibility on the official site.</div>
+  </div>
+</div>
+<div id="hud"></div>
+
+<script>
+/* ------------------------------------------------------------------ content */
+const ICON = {
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+  bookmark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
+};
+
+// Real seed listings (src/db/seed.ts, src/db/seed-extra.ts). Status badges are left off on purpose.
+const L = {
+  lihtc: { name: "Low-Income Housing Tax Credit (9% and 4%)", badges: ["Tax credit", "Development", "Federal", "For builders"], host: "irs.gov",
+    summary: "A federal tax credit for owners of low-income rental buildings. The credit is claimed each year over a 10-year period. A state or local housing credit agency allocates it.", verified: "Last verified Nov 7, 2026" },
+  density: { name: "California State Density Bonus Law", badges: ["Zoning bonus", "Development", "State · California", "For builders"], host: "leginfo.legislature.ca.gov",
+    summary: "Gives developers who include affordable homes extra density above local zoning limits. It can also reduce parking requirements and provide cost-saving concessions." },
+  nhtf: { name: "National Housing Trust Fund", badges: ["Other", "Development", "Federal", "For builders"], host: "hud.gov",
+    summary: "Money from HUD for states to produce or preserve affordable housing for extremely low- and very low-income households. Builders apply to their state, not to HUD.", verified: "Last verified Nov 7, 2026" },
+  adu: { name: "CalHFA ADU Grant Program", badges: ["Grant", "ADU", "State · California", "For builders"], host: "calhfa.ca.gov", amount: "Up to $40,000 one-time",
+    summary: "Grants of up to $40,000 to repay pre-development and one-time closing costs for building an accessory dwelling unit (ADU). Pre-development costs include site prep, designs, permits and soil tests.", verified: "Last verified Nov 7, 2026" },
+  ocadu: { name: "Orange County Affordable ADU Loan Program", badges: ["Loan", "ADU", "County · California", "For builders"], host: "ochft.org",
+    summary: "A planned loan program from the Orange County Housing Finance Trust to help homeowners build an accessory dwelling unit (ADU).", verified: "Last verified Nov 7, 2026" },
+  calfresh: { name: "CalFresh (California's SNAP)", badges: ["Benefit", "Food", "State · California"], host: "cdss.ca.gov",
+    summary: "California's name for the federal SNAP program, once called food stamps. Benefits are loaded each month onto an EBT card that you can use to buy most foods." },
+  medical: { name: "Medi-Cal", badges: ["Other", "Health", "State · California"], host: "dhcs.ca.gov",
+    summary: "California's Medicaid program. It gives free or low-cost health coverage to people who qualify." },
+  liheap: { name: "LIHEAP (Home Energy Assistance)", badges: ["Benefit", "Utilities", "Federal"], host: "acf.gov",
+    summary: "Helps pay heating or cooling bills and offers emergency help during an energy crisis. It is run by states, territories and tribes." },
+  caleitc: { name: "California Earned Income Tax Credit (CalEITC)", badges: ["Tax credit", "Income", "State · California"], host: "ftb.ca.gov", amount: "Up to $3,756/year",
+    summary: "A California tax credit for working people and families with low earned income." },
+};
+
+function card(l, { id = "", actions = true, ids = {} } = {}) {
+  return `<article class="card" ${id ? `id="${id}"` : ""}>
+    <div class="badges">${l.badges.map((b) => `<span class="badge">${b}</span>`).join("")}</div>
+    <h3>${l.name}</h3>
+    <div class="agency">${l.host}<span class="vbadge">${ICON.check}Verified by admin</span></div>
+    <p class="summary">${l.summary}</p>
+    ${l.amount ? `<div class="amount"><div class="k">Amount</div><div class="v">${l.amount}</div></div>` : ""}
+    <div class="srcrow"><span class="src" ${ids.src ? `id="${ids.src}"` : ""}>${ICON.ext}Source: ${l.host}${ids.src ? '<span class="ring" id="srcRing"></span>' : ""}</span><span class="muted">${l.verified ?? "Check the source for the latest details"}</span></div>
+    ${actions ? `<div class="actions">
+      <span class="btn" ${ids.save ? `id="${ids.save}"` : ""}>${ICON.bookmark}Save${ids.save ? `<span class="on">${ICON.bookmark}Saved</span>` : ""}</span>
+      <span class="btn" ${ids.share ? `id="${ids.share}"` : ""}>${ICON.share}Share</span>
+      <span class="btn details">Details</span></div>` : ""}
+  </article>`;
+}
+
+document.getElementById("setA").innerHTML = [L.lihtc, L.density, L.nhtf, L.adu].map((l, i) => card(l, { id: `la${i}` })).join("");
+document.getElementById("setB").innerHTML =
+  card(L.adu, { id: "b0", ids: { save: "saveBtn", share: "shareBtn", src: "srcBadge" } }) + card(L.ocadu, { id: "b1" });
+document.getElementById("hcards").innerHTML = [L.calfresh, L.medical, L.liheap, L.caleitc].map((l, i) => card(l, { id: `h${i}`, actions: false })).join("");
+
+const POST_TEXT = "Building an ADU in California? This grant can repay pre-development costs like designs, permits and soil tests.";
+
+/* ------------------------------------------------------------------ engine */
+const $ = (s) => document.querySelector(s);
+const clamp01 = (n) => Math.min(1, Math.max(0, n));
+const lerp = (a, b, p) => a + (b - a) * p;
+const E = {
+  inOut: (p) => (p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2),
+  out: (p) => 1 - (1 - p) ** 3,
+  outExpo: (p) => (p === 1 ? 1 : 1 - 2 ** (-10 * p)),
+  in: (p) => p * p * p,
+  lin: (p) => p,
+};
+const prog = (t, a, b, ease = E.inOut) => ease(clamp01((t - a) / (b - a)));
+
+const tracks = [];
+const DEFAULTS = { o: 1, x: 0, y: 0, s: 1, r: 0, rx: 0, b: 0 };
+/** keys: [[time, {o,x,y,s,r,rx,b}, ease?], ...]; each prop interpolates between keys that set it. */
+function K(sel, keys) {
+  const el = typeof sel === "string" ? $(sel) : sel;
+  tracks.push({ el, keys });
+}
+function sample(keys, t, prop) {
+  let prev = null;
+  for (const k of keys) {
+    if (!(prop in k[1])) continue;
+    if (t < k[0]) {
+      if (!prev) return k[1][prop];
+      const ease = k[2] ?? E.inOut;
+      return lerp(prev[1][prop], k[1][prop], ease(clamp01((t - prev[0]) / (k[0] - prev[0]))));
+    }
+    prev = k;
+  }
+  return prev ? prev[1][prop] : DEFAULTS[prop];
+}
+function applyTrack({ el, keys }, t) {
+  const v = {};
+  for (const p of Object.keys(DEFAULTS)) v[p] = sample(keys, t, p);
+  el.style.opacity = v.o;
+  el.style.transform = `perspective(1600px) translate(${v.x}px, ${v.y}px) scale(${v.s}) rotate(${v.r}deg) rotateX(${v.rx}deg)`;
+  el.style.filter = v.b > 0.05 ? `blur(${v.b}px)` : "none";
+  el.style.visibility = v.o < 0.002 ? "hidden" : "visible";
+}
+
+const hooks = [];
+const H = (fn) => hooks.push(fn);
+
+/** Fade + rise in, optional fade out. Apple-style: blur sharpens as it lands. */
+function reveal(sel, tin, tout, { y = 40, dur = 0.8, outDur = 0.5 } = {}) {
+  const keys = [[tin, { o: 0, y, b: 12 }], [tin + dur, { o: 1, y: 0, b: 0 }, E.outExpo]];
+  if (tout != null) keys.push([tout, { o: 1, y: 0, b: 0, s: 1 }], [tout + outDur, { o: 0, y: -24, b: 10, s: 0.98 }, E.in]);
+  K(sel, keys);
+}
+
+/* positions inside #app, ignoring transforms */
+function pos(el, root = $("#app")) {
+  let x = 0, y = 0, n = typeof el === "string" ? $(el) : el;
+  const w = n.offsetWidth, h = n.offsetHeight;
+  while (n && n !== root) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+  return { x, y, w, h, cx: x + w / 2, cy: y + h / 2 };
+}
+
+/* ------------------------------------------------------------------ timeline */
+const DURATION = 30;
+function build() {
+  const APP_TOP = 46; // chrome bar height; #app starts below it inside #win
+
+  /* ---- Scene A (0 - 4.3) ---- */
+  reveal("#a1", 0.25, 3.7);
+  reveal("#a2", 0.75, 3.75);
+  reveal("#abar", 1.35, 3.8, { y: 30 });
+  H((t) => {
+    $("#segRent").style.width = `${lerp(0, 66, prog(t, 1.5, 2.4, E.outExpo))}%`;
+    const pulse = t > 2.4 ? 0.5 + 0.5 * Math.sin((t - 2.4) * 6) : 0;
+    $("#segGap").style.background = `oklch(0.5 0.17 40 / ${0.08 + pulse * 0.14})`;
+  });
+
+  /* ---- Scene B (4.3 - 7.4): the pencil sketches the house, then the name ---- */
+  const strokes = [...document.querySelectorAll(".sk")];
+  const lens = strokes.map((p) => p.getTotalLength());
+  const total = lens.reduce((a, b) => a + b, 0);
+  const DRAW_A = 4.35, DRAW_B = 5.9;
+  const pencil = $("#pencil");
+  H((t) => {
+    // distribute drawing time by length, with short lifts between strokes
+    const lift = 0.06;
+    const span = DRAW_B - DRAW_A - lift * (strokes.length - 1);
+    let cursor = DRAW_A, tip = null, lifted = 0;
+    strokes.forEach((p, i) => {
+      const d = (lens[i] / total) * span;
+      const pr = clamp01((t - cursor) / d);
+      p.style.strokeDashoffset = String(1 - E.inOut(pr));
+      if (t >= cursor && t <= cursor + d) tip = p.getPointAtLength(E.inOut(pr) * lens[i]);
+      if (t > cursor + d && t < cursor + d + lift && i < strokes.length - 1) {
+        const a = p.getPointAtLength(lens[i]), b = strokes[i + 1].getPointAtLength(0);
+        const q = E.inOut((t - cursor - d) / lift);
+        tip = { x: lerp(a.x, b.x, q), y: lerp(a.y, b.y, q) };
+        lifted = Math.sin(Math.PI * q) * 10;
+      }
+      cursor += d + lift;
+    });
+    let op = 0;
+    if (t < DRAW_A) { tip = { x: 360, y: 230 }; }
+    if (!tip && t > DRAW_B) {
+      const q = prog(t, DRAW_B, DRAW_B + 0.45);
+      const end = strokes[strokes.length - 1].getPointAtLength(0);
+      tip = { x: lerp(end.x, 380, q), y: lerp(end.y, 60, q) }; lifted = 14 * q; op = 1 - q;
+    } else if (tip) op = prog(t, DRAW_A - 0.2, DRAW_A + 0.1);
+    if (t < DRAW_A - 0.2) op = 0;
+    const wob = Math.sin(t * 14) * 2;
+    pencil.setAttribute("transform", `translate(${tip.x + lifted * 0.6} ${tip.y - lifted}) rotate(${-55 + wob})`);
+    pencil.setAttribute("opacity", op);
+  });
+  reveal("#bWord", 5.75, 7.0, { y: 50, dur: 0.9 });
+  reveal("#bTag", 6.15, 7.05, { y: 30 });
+  K("#sketch", [[6.95, { o: 1, b: 0, y: 0 }], [7.45, { o: 0, b: 10, y: -24 }, E.in]]);
+
+  /* ---- Scene C (7.4 - 22.2): the app ---- */
+  const BASE = { X: 160, Y: 210, S: 1 };
+
+  const adu = pos("#b0"), side = pos("#side");
+  // Zoom shots keep a window edge flush with the frame so no empty backdrop shows.
+  const zA = { X: 40, Y: 540 - 1.5 * (adu.cy + APP_TOP), S: 1.5 };
+  const zS = { X: 1880 - 1.4 * 1600, Y: 520 - 1.4 * (side.cy + APP_TOP), S: 1.4 };
+  const cams = [
+    [7.4, { ...BASE, Y: 420, S: 0.9 }],
+    [8.5, BASE, E.outExpo],
+    [11.6, BASE],
+    [12.7, zA],
+    [14.15, zA],
+    [15.1, zS],
+    [17.1, zS],
+    [17.9, BASE],
+  ];
+  H((t) => {
+    const X = sample(cams, t, "X"), Y = sample(cams, t, "Y"), S = sample(cams, t, "S");
+    $("#cam").style.transform = `translate(${X}px, ${Y}px) scale(${S})`;
+  });
+  K("#win", [
+    [7.35, { o: 0, rx: 22, b: 8 }], [8.5, { o: 1, rx: 0, b: 0 }, E.outExpo],
+    [21.6, { o: 1, s: 1, b: 0, y: 0 }], [22.2, { o: 0, s: 0.92, b: 14, y: 40 }, E.in],
+  ]);
+  reveal("#cap1", 7.9, 11.5);
+  reveal("#cap2", 12.0, 13.95);
+  reveal("#cap3", 14.4, 17.3);
+  reveal("#cap4", 18.3, 21.45);
+
+  /* cursor path, in #app coordinates */
+  const P = (sel, dx = 0, dy = 0) => { const p = pos(sel); return { x: p.cx + dx, y: p.cy + dy }; };
+  const cat = P("#catPill"), opt = P("#optAdu", -30), src = P("#srcBadge", 10), save = P("#saveBtn"), share = P("#shareBtn"),
+    postB = P("#postBtn"), like = P("#likeBtn", -6);
+  const clicks = [10.0, 10.75, 14.0, 18.2, 20.4, 21.15];
+  const cur = [
+    [8.8, { x: 1250, y: 900, o: 0 }],
+    [9.1, { o: 1 }],
+    [9.9, { x: cat.x, y: cat.y }],
+    [10.6, { x: opt.x, y: opt.y }],
+    [12.1, { x: opt.x, y: opt.y }],
+    [12.8, { x: src.x, y: src.y }],
+    [13.3, { x: src.x, y: src.y }],
+    [13.9, { x: save.x, y: save.y }],
+    [17.4, { x: save.x, y: save.y }],
+    [18.1, { x: share.x, y: share.y }],
+    [18.6, { x: share.x, y: share.y }],
+  ];
+  // after the page switch the cursor travels to the Post button, then Like
+  cur.push([20.3, { x: postB.x, y: postB.y }], [20.6, { x: postB.x, y: postB.y }], [21.05, { x: like.x, y: like.y }], [21.5, { o: 1 }], [21.8, { o: 0 }]);
+  H((t) => {
+    const c = $("#cursor");
+    const x = sample(cur, t, "x"), y = sample(cur, t, "y"), o = sample(cur, t, "o");
+    let press = 1;
+    for (const ct of clicks) if (t > ct - 0.08 && t < ct + 0.14) press = 0.82;
+    c.style.opacity = o;
+    c.style.transform = `translate(${x - 4}px, ${y - 3}px) scale(${press})`;
+    const r = $("#clickring");
+    const last = clicks.filter((ct) => t >= ct).pop();
+    const rp = last != null ? (t - last) / 0.45 : 2;
+    r.style.opacity = rp < 1 ? (1 - rp) * 0.9 : 0;
+    r.style.transform = `translate(${x}px, ${y}px) scale(${0.3 + E.out(clamp01(rp)) * 1.1})`;
+  });
+
+  /* category dropdown and filtering */
+  K("#menu", [[10.05, { o: 0, s: 0.94, y: -6 }], [10.25, { o: 1, s: 1, y: 0 }, E.out], [10.85, { o: 1, s: 1 }], [11.0, { o: 0, s: 0.97 }]]);
+  H((t) => {
+    $("#optAdu").classList.toggle("hi", t > 10.45);
+    $("#catVal").textContent = t > 10.8 ? "ADU" : "Any";
+  });
+  ["#la0", "#la1", "#la2", "#la3"].forEach((s, i) => {
+    K(s, [[7.9 + i * 0.08, { o: 0, y: 30 }], [8.7 + i * 0.08, { o: 1, y: 0 }, E.outExpo], [10.9 + i * 0.04, { o: 1, s: 1 }], [11.2 + i * 0.04, { o: 0, s: 0.96 }]]);
+  });
+  ["#b0", "#b1"].forEach((s, i) => K(s, [[11.15 + i * 0.08, { o: 0, y: 24 }], [11.8 + i * 0.08, { o: 1, y: 0 }, E.outExpo]]));
+  K("#srcRing", [[12.75, { o: 0, s: 1.25 }], [13.05, { o: 1, s: 1 }, E.out], [13.6, { o: 1 }], [13.9, { o: 0 }]]);
+
+  /* save -> chip flies to the stack -> gap closes */
+  K("#saveBtn .on", [[14.0, { o: 0, s: 0.9 }], [14.2, { o: 1, s: 1 }, E.out]]);
+  const chipTo = { x: side.x + 40, y: pos("#savedVal").y - 8 };
+  H((t) => {
+    const chip = $("#flychip");
+    const p = prog(t, 14.15, 15.05, E.inOut);
+    const x = lerp(save.x - 30, chipTo.x, p), y = lerp(save.y - 50, chipTo.y, p) - Math.sin(Math.PI * p) * 120;
+    chip.style.opacity = t < 14.1 ? 0 : t < 15.05 ? Math.min(1, (t - 14.1) / 0.12) : Math.max(0, 1 - (t - 15.05) / 0.2);
+    chip.style.transform = `translate(${x}px, ${y}px) scale(${1 + Math.sin(Math.PI * p) * 0.15})`;
+
+    const g = prog(t, 15.15, 16.6, E.inOut);
+    $("#barSaved").style.width = `${lerp(0, 22.2222, g)}%`;
+    const savedC = Math.round(lerp(0, 40000, g) / 100) * 100;
+    $("#savedVal").textContent = "$" + savedC.toLocaleString("en-US");
+    $("#gapVal").textContent = "$" + (60000 - savedC).toLocaleString("en-US");
+    const glow = t > 15.1 && t < 17.2 ? Math.sin(Math.PI * clamp01((t - 15.1) / 2.1)) : 0;
+    $("#gapRow").style.background = `oklch(0.5 0.17 40 / ${glow * 0.12})`;
+    $("#gapRow").style.borderRadius = "8px";
+  });
+  K("#counted", [[15.6, { o: 0, y: 12 }], [16.2, { o: 1, y: 0 }, E.outExpo]]);
+
+  /* share -> feed */
+  K("#pageList", [[18.25, { o: 1, x: 0 }], [18.45, { o: 0, x: -40 }, E.in]]);
+  K("#pageFeed", [[18.45, { o: 0, x: 40 }], [18.85, { o: 1, x: 0 }, E.outExpo]]);
+  H((t) => {
+    const feed = t > 18.4;
+    $("#navFeed").classList.toggle("on", feed);
+    $("#navList").classList.toggle("on", !feed);
+    $("#urlText").textContent = feed ? "Feed | Gapless" : "Listings | Gapless";
+    const n = Math.floor(POST_TEXT.length * prog(t, 18.85, 20.1, E.lin));
+    const posted = t > 20.5;
+    $("#typed").textContent = posted ? "" : POST_TEXT.slice(0, n);
+    $("#caret").style.opacity = posted ? (Math.floor(t * 2) % 2 ? 1 : 0) : 1;
+    $("#postBody").textContent = POST_TEXT;
+    const liked = t > 21.15;
+    $("#likeBtn").style.color = liked ? "var(--blaze)" : "";
+    $("#likeBtn .fill").style.fill = liked ? "currentColor" : "transparent";
+    $("#likeCount").textContent = liked ? "1" : "Like";
+    $("#postBtn").style.transform = t > 20.36 && t < 20.52 ? "scale(0.94)" : "none";
+  });
+  K("#post", [[20.5, { o: 0, y: 30, s: 0.98 }], [21.0, { o: 1, y: 0, s: 1 }, E.outExpo]]);
+  K("#likeBtn", [[21.15, { s: 1 }], [21.25, { s: 1.18 }, E.out], [21.45, { s: 1 }]]);
+
+  /* ---- Scene D (22.0 - 26.1): households ---- */
+  K("#chalk", [[21.9, { o: 0 }], [22.4, { o: 1 }], [25.8, { o: 1 }], [26.3, { o: 0 }]]);
+  reveal("#dTitle", 22.35, 25.7, { y: 50, dur: 0.9 });
+  reveal("#dSub", 22.75, 25.75, { y: 30 });
+  ["#h0", "#h1", "#h2", "#h3"].forEach((s, i) => {
+    const tin = 23.1 + i * 0.14;
+    K(s, [
+      [tin, { o: 0, y: 160, rx: 28, b: 10 }],
+      [tin + 1.0, { o: 1, y: 0, rx: 0, b: 0 }, E.outExpo],
+      [25.55 + i * 0.04, { o: 1, y: -12 + (i % 2) * 10, s: 1, b: 0 }],
+      [26.0 + i * 0.04, { o: 0, y: -60, s: 0.96, b: 10 }, E.in],
+    ]);
+  });
+
+  /* ---- Scene E (26.1 - 30): end card ---- */
+  K("#eMark", [[26.25, { o: 0, s: 0.6, b: 10 }], [27.0, { o: 1, s: 1, b: 0 }, E.outExpo]]);
+  reveal("#eWord", 26.55, null, { y: 40, dur: 1.0 });
+  reveal("#eTag", 27.25, null, { y: 26, dur: 0.9 });
+  reveal("#eFine", 27.9, null, { y: 0, dur: 0.8 });
+
+  /* scene visibility (cheap: hide whole layers when idle) */
+  const scenes = [["#sceneA", 0, 4.4], ["#sceneB", 4.2, 7.6], ["#sceneC", 7.3, 22.3], ["#sceneD", 21.9, 26.4], ["#sceneE", 26.1, 30.1]];
+  H((t) => scenes.forEach(([s, a, b]) => ($(s).style.display = t >= a && t <= b ? "" : "none")));
+}
+
+function seek(t) {
+  for (const h of hooks) h(t);
+  for (const tr of tracks) applyTrack(tr, t);
+}
+
+/* ------------------------------------------------------------------ boot */
+window.ready = (async () => {
+  await document.fonts.ready;
+  build();
+  seek(0);
+})();
+window.seek = seek;
+window.DURATION = DURATION;
+
+const params = new URLSearchParams(location.search);
+if (!params.has("render")) {
+  // live preview: scale the stage to fit the window and loop
+  const fit = () => { const s = Math.min(innerWidth / 1920, innerHeight / 1080); $("#stage").style.transform = `scale(${s})`; };
+  addEventListener("resize", fit); fit();
+  window.ready.then(() => {
+    const start = performance.now() - (Number(params.get("t")) || 0) * 1000;
+    const loop = (now) => {
+      const t = ((now - start) / 1000) % DURATION;
+      seek(t);
+      $("#hud").textContent = t.toFixed(2) + "s";
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  });
+} else {
+  $("#hud").remove();
+  document.body.style.display = "block";
+}
+</script>
+</body>
+</html>
